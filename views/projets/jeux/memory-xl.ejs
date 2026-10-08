@@ -1,0 +1,86 @@
+<%- include('../../partials/back-button') %>
+
+<section class="projet-page">
+  <div class="container">
+    <div class="projet-header">
+      <div class="projet-eyebrow">Arcade — Jeu</div>
+      <h1 class="projet-title">Memory XL</h1>
+      <p class="projet-desc">La version grand format de Memory Grid : 12 paires à retrouver, avec des icônes au lieu de simples formes.</p>
+    </div>
+
+    <div class="projet-grid-2">
+      <div class="projet-panel glass">
+        <div id="grid" style="display:grid; grid-template-columns:repeat(6, 1fr); gap:8px;"></div>
+        <div class="badge-info" style="margin-top:14px;"><i class="fa-solid fa-hand-pointer"></i> Coups : <span id="movesDisplay">0</span></div>
+      </div>
+      <div class="projet-panel glass">
+        <h3 style="margin-bottom:16px;">🏆 Meilleurs scores</h3>
+        <p style="color:var(--text-secondary); font-size:0.82rem; margin-bottom:10px;">Score = 1500 - (coups × 15), minimum 0. Plus dur que Memory Grid classique.</p>
+        <table class="table-clean"><thead><tr><th>#</th><th>Joueur</th><th>Score</th></tr></thead><tbody id="leaderboardBody"></tbody></table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .memory-xl-card { aspect-ratio:1; border-radius:10px; background:var(--bg-secondary); border:1px solid var(--border-glass); display:flex; align-items:center; justify-content:center; font-size:1.6rem; cursor:pointer; transition:all 0.3s; }
+  @media (max-width: 600px) { #grid { grid-template-columns: repeat(4, 1fr) !important; } }
+</style>
+
+<script src="/js/leaderboard.js"></script>
+<script>
+  const symbols = ['🚀','🎮','🎯','🎨','🎵','📡','🔬','⚡','🌍','🛰️','💎','🧬'];
+  let cards = [...symbols, ...symbols];
+  let flipped = [], matched = [], moves = 0;
+
+  function shuffle(arr) { return arr.sort(() => Math.random() - 0.5); }
+
+  function render() {
+    cards = shuffle([...symbols, ...symbols]);
+    flipped = []; matched = []; moves = 0;
+    document.getElementById('movesDisplay').textContent = '0';
+    const grid = document.getElementById('grid');
+    grid.innerHTML = cards.map((sym, i) => `
+      <div class="memory-xl-card" data-idx="${i}" data-sym="${sym}">❔</div>
+    `).join('');
+    grid.querySelectorAll('.memory-xl-card').forEach(card => card.addEventListener('click', () => onCardClick(card)));
+  }
+
+  function onCardClick(card) {
+    const idx = parseInt(card.dataset.idx);
+    if (flipped.includes(idx) || matched.includes(idx) || flipped.length >= 2) return;
+
+    card.textContent = card.dataset.sym;
+    card.style.borderColor = 'var(--accent)';
+    flipped.push(idx);
+
+    if (flipped.length === 2) {
+      moves++;
+      document.getElementById('movesDisplay').textContent = moves;
+      const [a, b] = flipped;
+      if (cards[a] === cards[b]) {
+        matched.push(a, b);
+        flipped = [];
+        if (matched.length === cards.length) endGame();
+      } else {
+        setTimeout(() => {
+          flipped.forEach(i => {
+            const c = document.querySelector(`.memory-xl-card[data-idx="${i}"]`);
+            c.textContent = '❔'; c.style.borderColor = 'var(--border-glass)';
+          });
+          flipped = [];
+        }, 700);
+      }
+    }
+  }
+
+  function endGame() {
+    const score = Math.max(0, 1500 - moves * 15);
+    askPseudoAndSubmit('memory-xl', score);
+    setTimeout(() => loadLeaderboard('memory-xl', 'leaderboardBody'), 500);
+    setTimeout(() => { if (confirm(`Terminé en ${moves} coups ! Score : ${score}. Rejouer ?`)) render(); }, 300);
+  }
+
+  ensurePseudoThenStart(() => render());
+  loadLeaderboard('memory-xl', 'leaderboardBody');
+</script>

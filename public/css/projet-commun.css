@@ -1,0 +1,121 @@
+/* ============================================
+   PAGE PROJET - LAYOUT COMMUN
+   ============================================ */
+
+.projet-page {
+  min-height: 100vh;
+  padding: 130px 0 100px;
+}
+
+.projet-header {
+  margin-bottom: 50px;
+}
+.projet-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 14px;
+}
+.projet-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+.projet-desc { color: var(--text-secondary); font-size: 1rem; max-width: 700px; line-height: 1.7; }
+
+.projet-panel {
+  padding: 32px;
+  border-radius: var(--radius-lg);
+  margin-bottom: 24px;
+}
+
+.projet-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 900px) {
+  .projet-grid-2 { grid-template-columns: 1fr; }
+}
+
+/* Form fields génériques utilisés dans tous les projets */
+.field-row { margin-bottom: 18px; }
+.field-row label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; }
+.field-row input, .field-row select, .field-row textarea {
+  width: 100%;
+  padding: 13px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-glass);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.92rem;
+}
+.field-row input:focus, .field-row select:focus, .field-row textarea:focus { outline: none; border-color: var(--accent); }
+.field-row-inline { display: flex; gap: 14px; }
+.field-row-inline > div { flex: 1; }
+
+.result-box {
+  margin-top: 24px;
+  padding: 24px;
+  border-radius: var(--radius-md);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+}
+.result-box .result-value {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+.result-box .result-label { font-size: 0.82rem; color: var(--text-secondary); margin-top: 6px; }
+
+.table-clean { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+.table-clean th, .table-clean td { padding: 10px 12px; border-bottom: 1px solid var(--border-glass); text-align: left; }
+.table-clean th { color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; }
+
+.badge-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: var(--accent-2-soft);
+  color: var(--accent-2);
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.chart-wrap { position: relative; height: 320px; margin-top: 20px; }
+
+.upload-zone {
+  border: 2px dashed var(--border-glass);
+  border-radius: var(--radius-md);
+  padding: 40px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.upload-zone:hover, .upload-zone.dragover { border-color: var(--accent); background: var(--accent-soft); }
+.upload-zone i { font-size: 2rem; color: var(--accent); margin-bottom: 12px; }
+.upload-zone p { color: var(--text-secondary); font-size: 0.88rem; }
+
+.btn-block { width: 100%; justify-content: center; }
+
+/* ============================================
+   CALCULATRICE - boutons responsive
+   ============================================ */
+.calc-btn {
+  padding: 14px 6px;
+  font-size: 1rem;
+  justify-content: center;
+}
+@media (max-width: 480px) {
+  .calc-btn { padding: 12px 4px; font-size: 0.9rem; }
+  #calcDisplay { font-size: 1.4rem !important; padding: 16px !important; }
+}

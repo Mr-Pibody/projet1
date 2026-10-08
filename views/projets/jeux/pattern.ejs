@@ -1,0 +1,69 @@
+<%- include('../../partials/back-button') %>
+
+<section class="projet-page">
+  <div class="container">
+    <div class="projet-header">
+      <div class="projet-eyebrow">Arcade — Jeu 4</div>
+      <h1 class="projet-title">Pattern Breaker</h1>
+      <p class="projet-desc">Observez la séquence de couleurs, trouvez la suivante. La difficulté augmente à chaque niveau réussi.</p>
+    </div>
+
+    <div class="projet-grid-2">
+      <div class="projet-panel glass" style="text-align:center;">
+        <div class="badge-info" style="margin-bottom:20px;"><i class="fa-solid fa-layer-group"></i> Niveau <span id="levelDisplay">1</span></div>
+        <div id="sequenceDisplay" style="display:flex; justify-content:center; gap:12px; margin-bottom:30px; min-height:60px;"></div>
+        <p style="color:var(--text-secondary); margin-bottom:16px;">Quelle est la prochaine couleur ?</p>
+        <div id="optionsDisplay" style="display:flex; justify-content:center; gap:12px;"></div>
+      </div>
+      <div class="projet-panel glass">
+        <h3 style="margin-bottom:16px;">🏆 Meilleurs scores</h3>
+        <table class="table-clean"><thead><tr><th>#</th><th>Joueur</th><th>Score</th></tr></thead><tbody id="leaderboardBody"></tbody></table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="/js/leaderboard.js"></script>
+<script>
+  const colors = ['#00f0c0', '#7c5cff', '#ff5c7a', '#ffd166', '#4cc9f0'];
+  let level = 1, sequence = [], answer = null;
+
+  function generateRound() {
+    const len = Math.min(3 + level, 8);
+    sequence = Array.from({ length: len }, () => colors[Math.floor(Math.random() * colors.length)]);
+    answer = colors[Math.floor(Math.random() * colors.length)];
+
+    document.getElementById('levelDisplay').textContent = level;
+    const seqDiv = document.getElementById('sequenceDisplay');
+    seqDiv.innerHTML = sequence.map(c => `<div style="width:40px; height:40px; border-radius:10px; background:${c}; box-shadow:0 0 12px ${c};"></div>`).join('') + `<div style="width:40px; height:40px; border-radius:10px; background:var(--bg-secondary); border:2px dashed var(--border-glass); display:flex; align-items:center; justify-content:center;">?</div>`;
+
+    const options = shuffle([answer, ...shuffle(colors.filter(c => c !== answer)).slice(0, 3)]);
+    document.getElementById('optionsDisplay').innerHTML = options.map(c => `
+      <button class="pattern-opt" data-color="${c}" style="width:60px; height:60px; border-radius:12px; background:${c}; border:none; cursor:pointer; transition:transform 0.2s;"></button>
+    `).join('');
+    document.querySelectorAll('.pattern-opt').forEach(btn => btn.addEventListener('click', () => checkAnswer(btn.dataset.color)));
+  }
+
+  function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
+
+  function checkAnswer(chosen) {
+    if (chosen === answer) {
+      level++;
+      generateRound();
+    } else {
+      endGame();
+    }
+  }
+
+  function endGame() {
+    const score = (level - 1) * 50;
+    alert(`Game Over ! Niveau atteint : ${level}. Score : ${score}`);
+    askPseudoAndSubmit('pattern-breaker', score);
+    setTimeout(() => loadLeaderboard('pattern-breaker', 'leaderboardBody'), 500);
+    level = 1;
+    generateRound();
+  }
+
+  ensurePseudoThenStart(() => generateRound());
+  loadLeaderboard('pattern-breaker', 'leaderboardBody');
+</script>

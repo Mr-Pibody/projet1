@@ -1,0 +1,44 @@
+<%- include('../partials/back-button') %>
+
+<section class="projet-page">
+  <div class="container">
+    <div class="projet-header">
+      <div class="projet-eyebrow">Projet — Temps réel</div>
+      <h1 class="projet-title">Salons éphémères</h1>
+      <p class="projet-desc">Créez un salon, partagez le code, discutez en texte/image/vidéo (5 Mo max par fichier). Rien n'est conservé : tout disparaît à la fermeture du salon.</p>
+    </div>
+
+    <div class="projet-panel glass" style="max-width:500px; margin:0 auto;">
+      <div class="field-row"><label>Votre pseudo</label><input type="text" id="pseudoInput" placeholder="Votre nom"></div>
+
+      <button class="btn btn-primary btn-block" id="createBtn"><i class="fa-solid fa-plus"></i> Créer un nouveau salon</button>
+
+      <div style="text-align:center; margin:20px 0; color:var(--text-muted);">— ou —</div>
+
+      <div class="field-row"><label>Code du salon</label><input type="text" id="codeInput" placeholder="Ex: a1b2c3"></div>
+      <button class="btn btn-ghost btn-block" id="joinBtn"><i class="fa-solid fa-right-to-bracket"></i> Rejoindre le salon</button>
+    </div>
+  </div>
+</section>
+
+<script>
+  function getPseudo() {
+    const pseudo = document.getElementById('pseudoInput').value.trim();
+    if (!pseudo) { alert('Entrez un pseudo.'); return null; }
+    sessionStorage.setItem('salonPseudo', pseudo);
+    return pseudo;
+  }
+
+  document.getElementById('createBtn').addEventListener('click', () => {
+    if (!getPseudo()) return;
+    const code = Math.random().toString(36).slice(2, 8);
+    window.location.href = `/projets/salons/${code}`;
+  });
+
+  document.getElementById('joinBtn').addEventListener('click', () => {
+    if (!getPseudo()) return;
+    const code = document.getElementById('codeInput').value.trim();
+    if (!code) { alert('Entrez un code de salon.'); return; }
+    window.location.href = `/projets/salons/${code}`;
+  });
+</script>

@@ -1,0 +1,84 @@
+<section class="section-pad faq-section" id="faq" aria-labelledby="faq-title">
+  <div class="container">
+    <div class="section-heading reveal">
+      <p class="section-kicker">Questions fréquentes</p>
+      <h2 class="section-title" id="faq-title">Quelques repères<br><span class="text-accent">sur mon travail.</span></h2>
+    </div>
+
+    <div class="faq-list">
+      <article class="faq-item glass reveal">
+        <h3><button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-answer-1">Que démontre Pibody IA ?<span class="faq-toggle" aria-hidden="true">+</span></button></h3>
+        <div class="faq-answer" id="faq-answer-1"><div class="faq-answer-inner">Pibody IA démontre une intégration d’API de modèles conversationnels (Groq, Gemini, Mistral) dans une application Node.js/Express. Je ne présente pas ce projet comme un modèle entraîné par moi.</div></div>
+      </article>
+      <article class="faq-item glass reveal">
+        <h3><button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-answer-2">Quelles sont mes bases techniques ?<span class="faq-toggle" aria-hidden="true">+</span></button></h3>
+        <div class="faq-answer" id="faq-answer-2"><div class="faq-answer-inner">Mon parcours et mes projets portent notamment sur JavaScript, Node.js, Express, PHP, C++, le développement web, SQL, MySQL et SQLite.</div></div>
+      </article>
+      <article class="faq-item glass reveal">
+        <h3><button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-answer-3">Pourquoi m’orienter vers l’intelligence artificielle ?<span class="faq-toggle" aria-hidden="true">+</span></button></h3>
+        <div class="faq-answer" id="faq-answer-3"><div class="faq-answer-inner">Mes projets m’ont donné envie d’aller plus loin que l’intégration d’outils : je souhaite consolider mes bases et approfondir les méthodes de l’IA dans la suite de mon parcours académique, notamment en Master.</div></div>
+      </article>
+      <article class="faq-item glass reveal">
+        <h3><button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-answer-4">Les autres projets sont-ils accessibles ?<span class="faq-toggle" aria-hidden="true">+</span></button></h3>
+        <div class="faq-answer" id="faq-answer-4"><div class="faq-answer-inner">Oui. Les outils, applications, pages interactives et projets serveur restent accessibles dans la section Projets. Les pages existantes n’ont pas été remplacées par des captures statiques.</div></div>
+      </article>
+      <article class="faq-item glass reveal">
+        <h3><button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-answer-5">Comment me joindre ?<span class="faq-toggle" aria-hidden="true">+</span></button></h3>
+        <div class="faq-answer" id="faq-answer-5"><div class="faq-answer-inner">Tu peux m’écrire à l’adresse indiquée ci-dessous, utiliser le formulaire ou me contacter sur LinkedIn et WhatsApp.</div></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section-pad contact-section" id="contact" aria-labelledby="contact-title">
+  <div class="container">
+    <div class="section-heading reveal">
+      <p class="section-kicker">Contact</p>
+      <h2 class="section-title" id="contact-title">Parlons de votre<br><span class="text-accent">prochaine idée.</span></h2>
+      <p class="section-intro">Pour une question, un échange académique ou une collaboration autour d’un projet numérique, vous pouvez me joindre ici.</p>
+    </div>
+
+    <div class="contact-grid">
+      <div class="contact-info-card glass reveal">
+        <p class="contact-card-label">Me contacter</p>
+        <a class="contact-info-row" href="mailto:elfriedzannou@gmail.com">
+          <span class="ci-icon" aria-hidden="true">@</span>
+          <span><span class="ci-label">Email</span><span class="ci-value">elfriedzannou@gmail.com</span></span>
+        </a>
+        <a class="contact-info-row" href="tel:+2290199242930">
+          <span class="ci-icon" aria-hidden="true">☎</span>
+          <span><span class="ci-label">Téléphone</span><span class="ci-value">+229 01 99 24 29 30</span></span>
+        </a>
+        <a class="contact-info-row" href="https://wa.me/2290199242930" target="_blank" rel="noopener noreferrer">
+          <span class="ci-icon" aria-hidden="true">↗</span>
+          <span><span class="ci-label">WhatsApp</span><span class="ci-value">Écrire sur WhatsApp</span></span>
+        </a>
+        <div class="contact-info-row">
+          <span class="ci-icon" aria-hidden="true">⌖</span>
+          <span><span class="ci-label">Localisation</span><span class="ci-value">Cotonou, Bénin</span></span>
+        </div>
+        <a class="contact-linkedin" href="https://www.linkedin.com/in/elfried-zannou" target="_blank" rel="noopener noreferrer">LinkedIn <span aria-hidden="true">↗</span></a>
+      </div>
+
+      <div class="contact-form-card glass reveal">
+        <form id="contact-form" action="/api/contact" method="post">
+          <div class="form-row">
+            <label for="contact-name">Nom</label>
+            <input id="contact-name" type="text" name="nom" required maxlength="120" autocomplete="name" placeholder="Votre nom">
+          </div>
+          <div class="form-row">
+            <label for="contact-email">Adresse e-mail</label>
+            <input id="contact-email" type="email" name="email" required maxlength="254" autocomplete="email" placeholder="vous@exemple.com">
+          </div>
+          <div class="form-row">
+            <label for="contact-message">Message</label>
+            <textarea id="contact-message" name="message" required minlength="10" maxlength="5000" rows="6" placeholder="Présentez brièvement votre demande…"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Envoyer le message <span aria-hidden="true">↗</span></button>
+          <p class="form-privacy-note">Les informations sont utilisées uniquement pour répondre à votre message.</p>
+          <div class="form-status" id="contact-status" role="status" aria-live="polite" aria-atomic="true"></div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>

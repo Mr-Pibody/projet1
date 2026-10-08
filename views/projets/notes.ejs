@@ -1,0 +1,177 @@
+<%- include('../partials/back-button') %>
+
+<section class="projet-page">
+  <div class="container">
+    <div class="projet-header">
+      <div class="projet-eyebrow">Projet — Gestion scolaire</div>
+      <h1 class="projet-title">Gestion de notes élèves</h1>
+      <p class="projet-desc">Créez votre espace, ajoutez matières/élèves/notes, obtenez moyennes et rangs calculés automatiquement. Aucune donnée n'est conservée sur le serveur : téléchargez votre bulletin Word et votre fichier de sauvegarde chiffré avant de partir.</p>
+      <div class="badge-info" style="margin-top:14px;"><i class="fa-solid fa-lock"></i> Le fichier .pibody est chiffré (AES-256) — seul ce serveur peut le relire.</div>
+    </div>
+
+    <div class="projects-filter">
+      <button class="filter-chip active" data-tab="nouveau">Nouvel espace</button>
+      <button class="filter-chip" data-tab="recuperer">Récupérer un espace</button>
+    </div>
+
+    <div id="tab-recuperer" class="projet-panel glass" style="display:none; max-width:500px;">
+      <div class="upload-zone" id="dropZoneImport">
+        <i class="fa-solid fa-file-import"></i>
+        <p>Importez votre fichier <strong>.pibody</strong></p>
+        <input type="file" id="importInput" accept=".pibody" style="display:none;">
+      </div>
+    </div>
+
+    <div id="tab-nouveau">
+      <div class="field-row" style="max-width:400px;">
+        <label>Titre de l'espace / classe</label>
+        <input type="text" id="espaceTitre" placeholder="Ex: Terminale D - Trimestre 1">
+      </div>
+
+      <div class="projet-grid-2">
+        <div class="projet-panel glass">
+          <h3 style="margin-bottom:16px;">Matières</h3>
+          <div id="matieresContainer"></div>
+          <button class="btn btn-ghost btn-block" id="addMatiereBtn" style="margin-top:10px;"><i class="fa-solid fa-plus"></i> Ajouter une matière</button>
+        </div>
+
+        <div class="projet-panel glass">
+          <h3 style="margin-bottom:16px;">Élèves</h3>
+          <div id="elevesContainer"></div>
+          <button class="btn btn-ghost btn-block" id="addEleveBtn" style="margin-top:10px;"><i class="fa-solid fa-user-plus"></i> Ajouter un élève</button>
+        </div>
+      </div>
+
+      <div class="projet-panel glass" style="margin-top:20px;">
+        <button class="btn btn-primary btn-block" id="calculerBtn"><i class="fa-solid fa-calculator"></i> Calculer moyennes et rangs</button>
+        <div id="resultatsContainer" style="margin-top:20px;"></div>
+
+        <div class="field-row-inline" style="margin-top:20px;">
+          <button class="btn btn-ghost btn-block" id="exportWordBtn"><i class="fa-solid fa-file-word"></i> Télécharger le bulletin (Word)</button>
+          <button class="btn btn-ghost btn-block" id="exportChiffreBtn"><i class="fa-solid fa-lock"></i> Télécharger la sauvegarde (.pibody)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  let matieres = [];
+  let eleves = [];
+
+  document.querySelectorAll('[data-tab]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-tab]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-nouveau').style.display = btn.dataset.tab === 'nouveau' ? 'block' : 'none';
+      document.getElementById('tab-recuperer').style.display = btn.dataset.tab === 'recuperer' ? 'block' : 'none';
+    });
+  });
+
+  function renderMatieres() {
+    const c = document.getElementById('matieresContainer');
+    c.innerHTML = matieres.map((m, i) => `
+      <div class="field-row-inline" style="margin-bottom:8px;">
+        <input type="text" value="${m.nom}" placeholder="Nom" data-idx="${i}" class="mat-nom" style="flex:2;">
+        <input type="number" value="${m.coef}" placeholder="Coef" data-idx="${i}" class="mat-coef" style="flex:1;">
+        <button class="btn btn-ghost mat-remove" data-idx="${i}"><i class="fa-solid fa-trash"></i></button>
+      </div>
+    `).join('');
+    c.querySelectorAll('.mat-nom').forEach(inp => inp.addEventListener('input', e => matieres[e.target.dataset.idx].nom = e.target.value));
+    c.querySelectorAll('.mat-coef').forEach(inp => inp.addEventListener('input', e => matieres[e.target.dataset.idx].coef = e.target.value));
+    c.querySelectorAll('.mat-remove').forEach(btn => btn.addEventListener('click', e => { matieres.splice(e.currentTarget.dataset.idx, 1); renderMatieres(); renderEleves(); }));
+  }
+
+  function renderEleves() {
+    const c = document.getElementById('elevesContainer');
+    c.innerHTML = eleves.map((el, i) => `
+      <div class="projet-panel glass" style="margin-bottom:10px; padding:16px;">
+        <div class="field-row-inline">
+          <input type="text" value="${el.nom}" placeholder="Nom de l'élève" data-idx="${i}" class="eleve-nom" style="flex:2;">
+          <button class="btn btn-ghost eleve-remove" data-idx="${i}"><i class="fa-solid fa-trash"></i></button>
+        </div>
+        <div class="field-row-inline" style="margin-top:8px; flex-wrap:wrap;">
+          ${matieres.map(m => `
+            <div style="flex:1; min-width:90px;">
+              <label style="font-size:0.72rem; color:var(--text-muted);">${m.nom || '...'}</label>
+              <input type="number" min="0" max="20" value="${el.notes[m.id] || ''}" data-idx="${i}" data-mat="${m.id}" class="eleve-note" style="width:100%; padding:8px; border-radius:8px; border:1px solid var(--border-glass); background:var(--bg-secondary); color:var(--text-primary);">
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `).join('');
+    c.querySelectorAll('.eleve-nom').forEach(inp => inp.addEventListener('input', e => eleves[e.target.dataset.idx].nom = e.target.value));
+    c.querySelectorAll('.eleve-note').forEach(inp => inp.addEventListener('input', e => {
+      eleves[e.target.dataset.idx].notes[e.target.dataset.mat] = e.target.value;
+    }));
+    c.querySelectorAll('.eleve-remove').forEach(btn => btn.addEventListener('click', e => { eleves.splice(e.currentTarget.dataset.idx, 1); renderEleves(); }));
+  }
+
+  document.getElementById('addMatiereBtn').addEventListener('click', () => {
+    matieres.push({ id: 'm' + Date.now(), nom: '', coef: 1 });
+    renderMatieres(); renderEleves();
+  });
+  document.getElementById('addEleveBtn').addEventListener('click', () => {
+    eleves.push({ nom: '', notes: {} });
+    renderEleves();
+  });
+
+  matieres.push({ id: 'm1', nom: 'Mathématiques', coef: 3 }, { id: 'm2', nom: 'Français', coef: 2 });
+  eleves.push({ nom: '', notes: {} });
+  renderMatieres(); renderEleves();
+
+  document.getElementById('calculerBtn').addEventListener('click', async () => {
+    const res = await fetch('/projets/notes/calculer', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ matieres, eleves })
+    });
+    const data = await res.json();
+    if (!data.success) { alert('Erreur de calcul.'); return; }
+
+    document.getElementById('resultatsContainer').innerHTML = `
+      <table class="table-clean">
+        <thead><tr><th>Rang</th><th>Élève</th>${matieres.map(m => `<th>${m.nom}</th>`).join('')}<th>Moyenne</th></tr></thead>
+        <tbody>${data.resultats.map(r => `
+          <tr><td>${r.rang}</td><td>${r.nom}</td>${matieres.map(m => `<td>${r.notes[m.id] || '-'}</td>`).join('')}<td><strong>${r.moyenne}</strong></td></tr>
+        `).join('')}</tbody>
+      </table>
+    `;
+  });
+
+  async function exportFile(endpoint, filename) {
+    const titre = document.getElementById('espaceTitre').value || 'Espace notes';
+    const res = await fetch(endpoint, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ titre, matieres, eleves })
+    });
+    if (!res.ok) { alert('Erreur lors de l\'export.'); return; }
+    const blob = await res.blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+
+  document.getElementById('exportWordBtn').addEventListener('click', () => exportFile('/projets/notes/export-word', 'bulletin.docx'));
+  document.getElementById('exportChiffreBtn').addEventListener('click', () => exportFile('/projets/notes/export-chiffre', 'espace_notes.pibody'));
+
+  // ---- Import ----
+  const dropZoneImport = document.getElementById('dropZoneImport');
+  const importInput = document.getElementById('importInput');
+  dropZoneImport.addEventListener('click', () => importInput.click());
+  importInput.addEventListener('change', async (e) => {
+    if (!e.target.files.length) return;
+    const formData = new FormData();
+    formData.append('fichier', e.target.files[0]);
+    const res = await fetch('/projets/notes/importer', { method: 'POST', body: formData });
+    const data = await res.json();
+    if (data.success) {
+      matieres = data.matieres; eleves = data.eleves;
+      document.getElementById('espaceTitre').value = data.titre || '';
+      renderMatieres(); renderEleves();
+      document.querySelector('[data-tab="nouveau"]').click();
+      alert('Espace récupéré avec succès !');
+    } else {
+      alert(data.error || 'Erreur lors de l\'import.');
+    }
+  });
+</script>

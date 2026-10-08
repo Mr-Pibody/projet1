@@ -1,0 +1,118 @@
+<%- include('../partials/back-button') %>
+
+<section class="projet-page">
+  <div class="container">
+    <header class="projet-header">
+      <p class="projet-eyebrow">Projet · collecte de réponses</p>
+      <h1 class="projet-title">Questionnaire d’enquête</h1>
+      <p class="projet-desc">Créez un sondage, partagez le lien et suivez les réponses reçues. Les résultats sont calculés uniquement à partir des participations enregistrées.</p>
+    </header>
+
+    <section class="projet-panel glass" style="max-width:700px;" aria-label="Créer un questionnaire">
+      <div class="field-row"><label for="sondageTitre">Titre du sondage</label><input type="text" id="sondageTitre" maxlength="120" placeholder="Titre de votre enquête" required></div>
+
+      <h2 class="form-section-title">Questions</h2>
+      <div id="questionsContainer"></div>
+      <button class="btn btn-ghost" id="addQuestionBtn" type="button" style="margin-top:10px;"><i class="fa-solid fa-plus" aria-hidden="true"></i> Ajouter une question</button>
+
+      <button class="btn btn-primary btn-block" id="createBtn" type="button" style="margin-top:20px;"><i class="fa-solid fa-rocket" aria-hidden="true"></i> Créer le sondage</button>
+      <p id="surveyStatus" class="form-status" role="status" aria-live="polite"></p>
+      <div id="resultLinks" style="margin-top:20px;"></div>
+    </section>
+  </div>
+</section>
+
+<script>
+  const container = document.getElementById('questionsContainer');
+  const surveyStatus = document.getElementById('surveyStatus');
+
+  function addQuestion(texte = '', type = 'choix', options = ['', '']) {
+    const div = document.createElement('section');
+    div.className = 'projet-panel glass q-block';
+    div.style.marginBottom = '14px';
+    div.setAttribute('aria-label', 'Question du sondage');
+    div.innerHTML = `
+      <div class="field-row"><label>Question</label><input type="text" class="q-texte" value="" maxlength="240" placeholder="Saisir la question"></div>
+      <div class="field-row"><label>Type de réponse</label>
+        <select class="q-type">
+          <option value="choix" ${type==='choix'?'selected':''}>Choix multiple</option>
+          <option value="echelle" ${type==='echelle'?'selected':''}>Échelle (1–5)</option>
+          <option value="texte" ${type==='texte'?'selected':''}>Texte libre</option>
+        </select>
+      </div>
+      <div class="q-options-wrap">
+        <div class="q-options"></div>
+        <button type="button" class="btn btn-ghost add-opt-btn" style="margin-top:6px;"><i class="fa-solid fa-plus" aria-hidden="true"></i> Ajouter une option</button>
+      </div>
+      <button type="button" class="btn btn-ghost remove-q-btn" style="margin-top:10px;"><i class="fa-solid fa-trash" aria-hidden="true"></i> Supprimer cette question</button>
+    `;
+    const optsDiv = div.querySelector('.q-options');
+    function addOpt(val) {
+      const row = document.createElement('input');
+      row.type = 'text'; row.className = 'q-option'; row.value = val; row.placeholder = 'Saisir une option'; row.maxLength = 100;
+      row.setAttribute('aria-label', 'Option de réponse');
+      row.style.marginTop = '6px'; row.style.width = '100%'; row.style.padding = '10px'; row.style.borderRadius = '8px';
+      row.style.border = '1px solid var(--border-glass)'; row.style.background = 'var(--bg-secondary)'; row.style.color = 'var(--text-primary)';
+      optsDiv.appendChild(row);
+    }
+    options.forEach(addOpt);
+
+    function toggleOptionsVisibility() {
+      div.querySelector('.q-options-wrap').hidden = div.querySelector('.q-type').value !== 'choix';
+    }
+    div.querySelector('.q-type').addEventListener('change', toggleOptionsVisibility);
+    toggleOptionsVisibility();
+
+    div.querySelector('.add-opt-btn').addEventListener('click', () => {
+      if (optsDiv.children.length >= 12) { surveyStatus.textContent = 'Maximum 12 options par question.'; return; }
+      addOpt('');
+    });
+    div.querySelector('.remove-q-btn').addEventListener('click', () => div.remove());
+    container.appendChild(div);
+  }
+
+  document.getElementById('addQuestionBtn').addEventListener('click', () => {
+    if (container.children.length >= 12) { surveyStatus.textContent = 'Maximum 12 questions par sondage.'; return; }
+    addQuestion();
+  });
+  addQuestion();
+
+  document.getElementById('createBtn').addEventListener('click', async () => {
+    surveyStatus.textContent = '';
+    const titre = document.getElementById('sondageTitre').value.trim();
+    const questions = Array.from(document.querySelectorAll('.q-block')).map(block => {
+      const type = block.querySelector('.q-type').value;
+      const texte = block.querySelector('.q-texte').value.trim();
+      const options = type === 'choix'
+        ? Array.from(block.querySelectorAll('.q-option')).map(input => input.value.trim()).filter(Boolean)
+        : type === 'echelle' ? ['1', '2', '3', '4', '5'] : [];
+      return { texte, type, options };
+    }).filter(question => question.texte);
+
+    if (!titre || !questions.length) { surveyStatus.textContent = 'Un titre et au moins une question sont requis.'; return; }
+    const createButton = document.getElementById('createBtn');
+    createButton.disabled = true;
+    surveyStatus.textContent = 'Création en cours…';
+    try {
+      const response = await fetch('/projets/sondage/creer', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ titre, questions })
+      });
+      const data = await response.json();
+      if (!response.ok || !data.success) throw new Error(data.error || 'Impossible de créer le sondage.');
+      surveyStatus.textContent = 'Sondage créé. Les réponses suivantes seront enregistrées dans ses résultats.';
+      const responseLink = `${window.location.origin}/projets/sondage/repondre/${data.code}`;
+      document.getElementById('resultLinks').innerHTML = `
+        <div class="result-box">
+          <div class="result-label">Lien à partager pour répondre</div>
+          <div class="result-value" style="font-size:1rem; word-break:break-all;">${responseLink}</div>
+        </div>
+        <a href="/projets/sondage/resultats/${data.code}" class="btn btn-primary btn-block" style="margin-top:14px;"><i class="fa-solid fa-chart-bar" aria-hidden="true"></i> Voir les résultats</a>
+      `;
+    } catch (error) {
+      surveyStatus.textContent = error.message || 'Erreur lors de la création.';
+    } finally {
+      createButton.disabled = false;
+    }
+  });
+</script>

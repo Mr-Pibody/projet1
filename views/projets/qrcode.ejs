@@ -1,0 +1,75 @@
+<%- include('../partials/back-button') %>
+
+<section class="projet-page">
+  <div class="container">
+    <div class="projet-header">
+      <div class="projet-eyebrow">Projet — Networking</div>
+      <h1 class="projet-title">QR Code carte de contact</h1>
+      <p class="projet-desc">Remplissez vos coordonnées, générez un QR code vCard que n'importe quel smartphone peut scanner pour vous ajouter directement. Zéro stockage serveur.</p>
+    </div>
+
+    <div class="projet-grid-2">
+      <div class="projet-panel glass">
+        <form id="qrForm">
+          <div class="field-row-inline">
+            <div class="field-row"><label>Prénom</label><input type="text" name="prenom" required placeholder="Elfried"></div>
+            <div class="field-row"><label>Nom</label><input type="text" name="nom" required placeholder="ZANNOU"></div>
+          </div>
+          <div class="field-row"><label>Téléphone</label><input type="tel" name="tel" placeholder="+229 ..."></div>
+          <div class="field-row"><label>Email</label><input type="email" name="email" placeholder="vous@email.com"></div>
+          <div class="field-row"><label>Entreprise / Titre</label><input type="text" name="org" placeholder="Développeur Web"></div>
+          <div class="field-row"><label>Site web</label><input type="url" name="site" placeholder="https://..."></div>
+          <button type="submit" class="btn btn-primary btn-block"><i class="fa-solid fa-qrcode"></i> Générer le QR Code</button>
+        </form>
+      </div>
+
+      <div class="projet-panel glass" style="text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+        <div id="qrResult" style="background:#fff; padding:20px; border-radius:16px; display:none;">
+          <div id="qrcode"></div>
+        </div>
+        <p id="qrPlaceholder" style="color:var(--text-muted);">Le QR code apparaîtra ici</p>
+        <button class="btn btn-ghost" id="downloadQr" style="display:none; margin-top:16px;"><i class="fa-solid fa-download"></i> Télécharger</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script>
+  let qrInstance = null;
+
+  document.getElementById('qrForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const d = Object.fromEntries(fd.entries());
+
+    const vcard = `BEGIN:VCARD
+VERSION:3.0
+N:${d.nom};${d.prenom};;;
+FN:${d.prenom} ${d.nom}
+ORG:${d.org || ''}
+TEL;TYPE=CELL:${d.tel || ''}
+EMAIL:${d.email || ''}
+URL:${d.site || ''}
+END:VCARD`;
+
+    document.getElementById('qrcode').innerHTML = '';
+    qrInstance = new QRCode(document.getElementById('qrcode'), {
+      text: vcard, width: 220, height: 220,
+      colorDark: '#0c0f17', colorLight: '#ffffff'
+    });
+
+    document.getElementById('qrResult').style.display = 'block';
+    document.getElementById('qrPlaceholder').style.display = 'none';
+    document.getElementById('downloadQr').style.display = 'inline-flex';
+  });
+
+  document.getElementById('downloadQr').addEventListener('click', () => {
+    const img = document.querySelector('#qrcode img') || document.querySelector('#qrcode canvas');
+    if (!img) return;
+    const a = document.createElement('a');
+    a.href = img.src || img.toDataURL();
+    a.download = 'carte_contact_qr.png';
+    document.body.appendChild(a); a.click(); a.remove();
+  });
+</script>

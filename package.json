@@ -1,0 +1,32 @@
+{
+  "name": "portfolio2050",
+  "version": "1.1.0",
+  "description": "Portfolio Elfried ZANNOU — développement logiciel et orientation vers l'intelligence artificielle",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "docx": "^9.0.2",
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
+    "express": "^4.19.2",
+    "express-ejs-layouts": "^2.5.1",
+    "express-session": "^1.18.0",
+    "gsap": "^3.15.0",
+    "jimp": "^1.6.1",
+    "multer": "^2.2.0",
+    "nodemailer": "^10.0.16",
+    "pdfkit": "^0.15.0",
+    "session-file-store": "^1.5.0",
+    "socket.io": "^4.7.5",
+    "sql.js": "^1.14.1",
+    "uuid": "^11.1.1"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

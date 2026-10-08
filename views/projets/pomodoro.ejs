@@ -1,0 +1,112 @@
+<%- include('../partials/back-button') %>
+
+<section class="projet-page">
+  <div class="container">
+    <div class="projet-header">
+      <div class="projet-eyebrow">Projet 09 — Productivité</div>
+      <h1 class="projet-title">Time Tracker / Pomodoro</h1>
+      <p class="projet-desc">Minuteur de productivité classique. L'historique est sauvegardé localement sur votre appareil (aucune donnée envoyée au serveur).</p>
+    </div>
+
+    <div class="projet-grid-2">
+      <div class="projet-panel glass" style="text-align:center;">
+        <div class="field-row-inline" style="margin-bottom:20px; justify-content:center;">
+          <button class="filter-chip active" data-mode="25">Focus 25min</button>
+          <button class="filter-chip" data-mode="5">Pause 5min</button>
+          <button class="filter-chip" data-mode="15">Pause longue 15min</button>
+        </div>
+
+        <div style="font-family:var(--font-mono); font-size:4.5rem; font-weight:700; color:var(--accent); margin:30px 0;" id="timerDisplay">25:00</div>
+
+        <div class="field-row-inline" style="justify-content:center; gap:16px;">
+          <button class="btn btn-primary" id="startBtn"><i class="fa-solid fa-play"></i> Démarrer</button>
+          <button class="btn btn-ghost" id="pauseBtn"><i class="fa-solid fa-pause"></i> Pause</button>
+          <button class="btn btn-ghost" id="resetBtn"><i class="fa-solid fa-rotate-left"></i> Réinitialiser</button>
+        </div>
+      </div>
+
+      <div class="projet-panel glass">
+        <h3 style="margin-bottom:16px;">Historique des sessions</h3>
+        <table class="table-clean" id="historyTable">
+          <thead><tr><th>Type</th><th>Durée</th><th>Terminée le</th></tr></thead>
+          <tbody id="historyBody"></tbody>
+        </table>
+        <button class="btn btn-ghost btn-block" id="clearHistory" style="margin-top:16px;"><i class="fa-solid fa-trash"></i> Effacer l'historique</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  let totalSeconds = 25 * 60;
+  let remaining = totalSeconds;
+  let interval = null;
+  let currentMode = 25;
+
+  const display = document.getElementById('timerDisplay');
+
+  function updateDisplay() {
+    const m = Math.floor(remaining / 60).toString().padStart(2, '0');
+    const s = (remaining % 60).toString().padStart(2, '0');
+    display.textContent = `${m}:${s}`;
+  }
+
+  document.querySelectorAll('[data-mode]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-mode]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentMode = parseInt(btn.dataset.mode);
+      totalSeconds = currentMode * 60;
+      remaining = totalSeconds;
+      clearInterval(interval);
+      updateDisplay();
+    });
+  });
+
+  document.getElementById('startBtn').addEventListener('click', () => {
+    if (interval) return;
+    if (Notification && Notification.permission === 'default') Notification.requestPermission();
+    interval = setInterval(() => {
+      remaining--;
+      updateDisplay();
+      if (remaining <= 0) {
+        clearInterval(interval); interval = null;
+        saveSession();
+        if (Notification && Notification.permission === 'granted') {
+          new Notification('Session terminée !', { body: `${currentMode} minutes complétées.` });
+        } else {
+          alert('Session terminée !');
+        }
+        remaining = totalSeconds;
+        updateDisplay();
+      }
+    }, 1000);
+  });
+
+  document.getElementById('pauseBtn').addEventListener('click', () => { clearInterval(interval); interval = null; });
+  document.getElementById('resetBtn').addEventListener('click', () => { clearInterval(interval); interval = null; remaining = totalSeconds; updateDisplay(); });
+
+  function saveSession() {
+    const history = JSON.parse(localStorage.getItem('pomodoroHistory') || '[]');
+    const typeLabel = currentMode === 25 ? 'Focus' : currentMode === 5 ? 'Pause courte' : 'Pause longue';
+    history.unshift({ type: typeLabel, duree: currentMode + ' min', date: new Date().toLocaleString('fr-FR') });
+    localStorage.setItem('pomodoroHistory', JSON.stringify(history.slice(0, 50)));
+    renderHistory();
+  }
+
+  function renderHistory() {
+    const history = JSON.parse(localStorage.getItem('pomodoroHistory') || '[]');
+    const tbody = document.getElementById('historyBody');
+    tbody.innerHTML = history.length
+      ? history.map(h => `<tr><td>${h.type}</td><td>${h.duree}</td><td>${h.date}</td></tr>`).join('')
+      : '<tr><td colspan="3" style="color:var(--text-muted);">Aucune session enregistrée encore.</td></tr>';
+  }
+
+  document.getElementById('clearHistory').addEventListener('click', () => {
+    localStorage.removeItem('pomodoroHistory');
+    renderHistory();
+  });
+
+  updateDisplay();
+  renderHistory();
+</script>

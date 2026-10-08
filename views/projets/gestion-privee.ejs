@@ -1,0 +1,52 @@
+<section class="projet-page">
+  <div class="container">
+    <div class="projet-header">
+      <div class="projet-eyebrow">Accès privé</div>
+      <h1 class="projet-title">Espace de gestion</h1>
+      <p class="projet-desc">Connecte-toi à l'un des trois espaces pour gérer son contenu.</p>
+    </div>
+
+    <div class="projet-grid-2" style="max-width:900px;">
+      <div class="projet-panel glass">
+        <h3 style="margin-bottom:14px;"><i class="fa-solid fa-store"></i> Catalogue Boutique</h3>
+        <div class="field-row"><input type="password" class="gp-pass" placeholder="Mot de passe"></div>
+        <button class="btn btn-primary btn-block gp-connect" data-type="boutique">Se connecter</button>
+      </div>
+      <div class="projet-panel glass">
+        <h3 style="margin-bottom:14px;"><i class="fa-solid fa-cart-shopping"></i> E-commerce</h3>
+        <div class="field-row"><input type="password" class="gp-pass" placeholder="Mot de passe"></div>
+        <button class="btn btn-primary btn-block gp-connect" data-type="ecommerce">Se connecter</button>
+      </div>
+      <div class="projet-panel glass">
+        <h3 style="margin-bottom:14px;"><i class="fa-solid fa-utensils"></i> Restaurant</h3>
+        <div class="field-row"><input type="password" class="gp-pass" placeholder="Mot de passe"></div>
+        <button class="btn btn-primary btn-block gp-connect" data-type="restaurant">Se connecter</button>
+      </div>
+    </div>
+
+    <div id="gpError" style="margin-top:20px; color:var(--danger); display:none;"></div>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll('.gp-connect').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const type = btn.dataset.type;
+      const passInput = btn.closest('.projet-panel').querySelector('.gp-pass');
+      const password = passInput.value;
+
+      const res = await fetch('/projets/boutique/gestion-privee-pibody/connexion', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type, password })
+      });
+      const data = await res.json();
+      const errBox = document.getElementById('gpError');
+      if (data.success) {
+        window.location.href = data.redirect;
+      } else {
+        errBox.style.display = 'block';
+        errBox.textContent = data.error || 'Erreur de connexion.';
+      }
+    });
+  });
+</script>

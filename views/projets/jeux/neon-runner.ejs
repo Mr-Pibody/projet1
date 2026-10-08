@@ -1,0 +1,131 @@
+<%- include('../../partials/back-button') %>
+
+<section class="projet-page">
+  <div class="container">
+    <div class="projet-header">
+      <div class="projet-eyebrow">Arcade — Jeu 1</div>
+      <h1 class="projet-title">Neon Runner</h1>
+      <p class="projet-desc">Appuyez sur ESPACE ou cliquez pour sauter. Évitez les obstacles, ramassez les orbes bonus.</p>
+    </div>
+
+    <div class="projet-grid-2">
+      <div class="projet-panel glass">
+        <canvas id="gameCanvas" width="600" height="400" style="width:100%; background:#05070d; border-radius:12px; cursor:pointer;"></canvas>
+        <div style="display:flex; justify-content:space-between; margin-top:14px;">
+          <div class="badge-info"><i class="fa-solid fa-gauge"></i> Score : <span id="scoreDisplay">0</span></div>
+          <button class="btn btn-primary" id="restartBtn"><i class="fa-solid fa-rotate-right"></i> Recommencer</button>
+        </div>
+      </div>
+      <div class="projet-panel glass">
+        <h3 style="margin-bottom:16px;">🏆 Meilleurs scores</h3>
+        <table class="table-clean"><thead><tr><th>#</th><th>Joueur</th><th>Score</th></tr></thead><tbody id="leaderboardBody"></tbody></table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="/js/leaderboard.js"></script>
+<script>
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const groundY = H - 60;
+
+  let player, obstacles, bonuses, speed, score, gameOver, jumping, velocityY;
+
+  function init() {
+    player = { x: 80, y: groundY - 30, w: 30, h: 30 };
+    obstacles = [];
+    bonuses = [];
+    speed = 5;
+    score = 0;
+    gameOver = false;
+    jumping = false;
+    velocityY = 0;
+    document.getElementById('scoreDisplay').textContent = '0';
+  }
+
+  function spawnObstacle() {
+    obstacles.push({ x: W + 20, y: groundY - 30, w: 24, h: 30 });
+  }
+  function spawnBonus() {
+    bonuses.push({ x: W + 20, y: groundY - 90 - Math.random() * 40, r: 10 });
+  }
+
+  let frame = 0;
+  function update() {
+    if (gameOver) return;
+    frame++;
+    speed += 0.002;
+    score += 0.5;
+    document.getElementById('scoreDisplay').textContent = Math.floor(score);
+
+    if (jumping) {
+      velocityY += 0.9;
+      player.y += velocityY;
+      if (player.y >= groundY - player.h) { player.y = groundY - player.h; jumping = false; velocityY = 0; }
+    }
+
+    if (frame % Math.max(30, 70 - Math.floor(speed * 3)) === 0) spawnObstacle();
+    if (frame % 90 === 0) spawnBonus();
+
+    obstacles.forEach(o => o.x -= speed);
+    bonuses.forEach(b => b.x -= speed);
+    obstacles = obstacles.filter(o => o.x > -40);
+    bonuses = bonuses.filter(b => b.x > -40);
+
+    obstacles.forEach(o => {
+      if (player.x < o.x + o.w && player.x + player.w > o.x && player.y < o.y + o.h && player.y + player.h > o.y) {
+        endGame();
+      }
+    });
+    bonuses = bonuses.filter(b => {
+      const dx = (player.x + player.w/2) - b.x, dy = (player.y + player.h/2) - b.y;
+      if (Math.sqrt(dx*dx + dy*dy) < 24) { score += 20; return false; }
+      return true;
+    });
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    ctx.strokeStyle = 'rgba(0,240,192,0.3)';
+    ctx.beginPath(); ctx.moveTo(0, groundY); ctx.lineTo(W, groundY); ctx.stroke();
+
+    ctx.fillStyle = '#00f0c0';
+    ctx.shadowColor = '#00f0c0'; ctx.shadowBlur = 15;
+    ctx.fillRect(player.x, player.y, player.w, player.h);
+    ctx.shadowBlur = 0;
+
+    ctx.fillStyle = '#ff5c7a';
+    obstacles.forEach(o => ctx.fillRect(o.x, o.y, o.w, o.h));
+
+    ctx.fillStyle = '#ffd166';
+    bonuses.forEach(b => { ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI*2); ctx.fill(); });
+
+    if (gameOver) {
+      ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = '#fff'; ctx.font = 'bold 28px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('Game Over', W/2, H/2 - 10);
+      ctx.font = '16px sans-serif';
+      ctx.fillText('Score final : ' + Math.floor(score), W/2, H/2 + 20);
+    }
+  }
+
+  function loop() { update(); draw(); if (!gameOver) requestAnimationFrame(loop); }
+
+  function jump() { if (!jumping && !gameOver) { jumping = true; velocityY = -14; } }
+
+  function endGame() {
+    gameOver = true;
+    askPseudoAndSubmit('neon-runner', Math.floor(score));
+    setTimeout(() => loadLeaderboard('neon-runner', 'leaderboardBody'), 500);
+  }
+
+  document.addEventListener('keydown', e => { if (e.code === 'Space') { e.preventDefault(); jump(); } });
+  canvas.addEventListener('click', jump);
+  document.getElementById('restartBtn').addEventListener('click', () => { init(); loop(); });
+
+  init(); 
+  ensurePseudoThenStart(() => loop());
+  loadLeaderboard('neon-runner', 'leaderboardBody');
+</script>

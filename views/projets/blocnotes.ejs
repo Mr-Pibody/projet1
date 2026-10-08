@@ -1,0 +1,57 @@
+<%- include('../partials/back-button') %>
+
+<section class="projet-page">
+  <div class="container">
+    <div class="projet-header">
+      <div class="projet-eyebrow">Projet — Confidentialité</div>
+      <h1 class="projet-title">Bloc-notes chiffré</h1>
+      <p class="projet-desc">Écrivez librement, puis téléchargez un fichier chiffré (AES-256) pour conserver votre texte en sécurité. Rien n'est gardé sur le serveur après le téléchargement.</p>
+    </div>
+
+    <div class="projet-panel glass" style="max-width:700px;">
+      <div class="upload-zone" id="dropZoneImport" style="margin-bottom:20px;">
+        <i class="fa-solid fa-file-import"></i>
+        <p>Récupérer un bloc-notes existant (.pibody)</p>
+        <input type="file" id="importInput" accept=".pibody" style="display:none;">
+      </div>
+
+      <textarea id="noteContent" rows="14" placeholder="Écrivez ici ce que vous voulez garder en sécurité..." style="width:100%; padding:18px; border-radius:10px; border:1px solid var(--border-glass); background:var(--bg-secondary); color:var(--text-primary); font-family:var(--font-mono); font-size:0.92rem;"></textarea>
+
+      <button class="btn btn-primary btn-block" id="exportBtn" style="margin-top:16px;"><i class="fa-solid fa-lock"></i> Télécharger le fichier chiffré</button>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.getElementById('exportBtn').addEventListener('click', async () => {
+    const contenu = document.getElementById('noteContent').value;
+    if (!contenu.trim()) { alert('Le bloc-notes est vide.'); return; }
+
+    const res = await fetch('/projets/blocnotes/export-chiffre', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contenu })
+    });
+    if (!res.ok) { alert('Erreur lors du chiffrement.'); return; }
+    const blob = await res.blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = 'bloc_notes.pibody';
+    document.body.appendChild(a); a.click(); a.remove();
+  });
+
+  const dropZoneImport = document.getElementById('dropZoneImport');
+  const importInput = document.getElementById('importInput');
+  dropZoneImport.addEventListener('click', () => importInput.click());
+  importInput.addEventListener('change', async (e) => {
+    if (!e.target.files.length) return;
+    const formData = new FormData();
+    formData.append('fichier', e.target.files[0]);
+    const res = await fetch('/projets/blocnotes/importer', { method: 'POST', body: formData });
+    const data = await res.json();
+    if (data.success) {
+      document.getElementById('noteContent').value = data.contenu;
+      alert('Bloc-notes récupéré avec succès !');
+    } else {
+      alert(data.error || 'Erreur lors de l\'import.');
+    }
+  });
+</script>

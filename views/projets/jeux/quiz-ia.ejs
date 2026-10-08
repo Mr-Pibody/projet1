@@ -1,0 +1,151 @@
+<%- include('../../partials/back-button') %>
+
+<section class="projet-page">
+  <div class="container">
+    <div class="projet-header">
+      <div class="projet-eyebrow">Arcade — Jeu IA</div>
+      <h1 class="projet-title">Quiz IA</h1>
+      <p class="projet-desc">Choisis une catégorie, l'IA génère les questions en direct — parfois en QCM, parfois en réponse libre.</p>
+      <div class="badge-info" style="margin-top:14px;"><i class="fa-solid fa-circle-info"></i> Nécessite une clé API IA configurée côté serveur (Groq, Gemini ou Mistral).</div>
+    </div>
+
+    <div class="projet-grid-2">
+      <div class="projet-panel glass">
+        <div id="categorySelect">
+          <h3 style="margin-bottom:16px;">Choisis une catégorie</h3>
+          <div class="projects-filter">
+            <button class="filter-chip cat-btn" data-cat="Sport">⚽ Sport</button>
+            <button class="filter-chip cat-btn" data-cat="Football">🏆 Football</button>
+            <button class="filter-chip cat-btn" data-cat="Littérature">📚 Littérature</button>
+            <button class="filter-chip cat-btn" data-cat="Cinéma">🎬 Cinéma</button>
+            <button class="filter-chip cat-btn" data-cat="Histoire">🏛️ Histoire</button>
+            <button class="filter-chip cat-btn" data-cat="Sciences">🔬 Sciences</button>
+            <button class="filter-chip cat-btn" data-cat="Géographie">🌍 Géographie</button>
+            <button class="filter-chip cat-btn" data-cat="Musique">🎵 Musique</button>
+          </div>
+        </div>
+
+        <div id="quizZone" style="display:none;">
+          <div class="badge-info"><i class="fa-solid fa-layer-group"></i> Question <span id="qNumber">1</span> · Score : <span id="qScore">0</span></div>
+          <div id="qLoading" style="text-align:center; padding:40px;"><i class="fa-solid fa-spinner fa-spin" style="font-size:2rem; color:var(--accent);"></i></div>
+          <div id="qContent" style="display:none;">
+            <h3 id="qQuestionText" style="margin:20px 0;"></h3>
+            <div id="qOptionsZone"></div>
+            <div id="qFreeZone" style="display:none;">
+              <input type="text" id="qFreeInput" placeholder="Ta réponse..." style="width:100%; padding:14px; border-radius:10px; border:1px solid var(--border-glass); background:var(--bg-secondary); color:var(--text-primary); margin-bottom:14px;">
+              <button class="btn btn-primary btn-block" id="qFreeSubmit">Valider</button>
+            </div>
+          </div>
+          <div id="qFeedback" style="margin-top:16px; display:none;"></div>
+        </div>
+      </div>
+
+      <div class="projet-panel glass">
+        <h3 style="margin-bottom:16px;">🏆 Meilleurs scores</h3>
+        <table class="table-clean"><thead><tr><th>#</th><th>Joueur</th><th>Score</th></tr></thead><tbody id="leaderboardBody"></tbody></table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="/js/leaderboard.js"></script>
+<script>
+  let currentCat = null;
+  let score = 0, qCount = 0;
+  let currentQuestion = null;
+  const MAX_QUESTIONS = 8;
+
+  document.querySelectorAll('.cat-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentCat = btn.dataset.cat;
+      ensurePseudoThenStart(() => {
+        document.getElementById('categorySelect').style.display = 'none';
+        document.getElementById('quizZone').style.display = 'block';
+        score = 0; qCount = 0;
+        document.getElementById('qScore').textContent = '0';
+        loadQuestion();
+      });
+    });
+  });
+
+  async function loadQuestion() {
+    qCount++;
+    document.getElementById('qNumber').textContent = qCount;
+    document.getElementById('qLoading').style.display = 'block';
+    document.getElementById('qContent').style.display = 'none';
+    document.getElementById('qFeedback').style.display = 'none';
+
+    try {
+      const res = await fetch('/projets/jeux/quiz-ia/question', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ categorie: currentCat })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+
+      currentQuestion = data;
+      document.getElementById('qLoading').style.display = 'none';
+      document.getElementById('qContent').style.display = 'block';
+      document.getElementById('qQuestionText').textContent = data.question;
+
+      const optsZone = document.getElementById('qOptionsZone');
+      const freeZone = document.getElementById('qFreeZone');
+
+      if (data.type === 'qcm') {
+        optsZone.style.display = 'block';
+        freeZone.style.display = 'none';
+        optsZone.innerHTML = data.options.map(opt => `<button class="btn btn-ghost btn-block qcm-opt" style="margin-bottom:10px; text-align:left;">${opt}</button>`).join('');
+        optsZone.querySelectorAll('.qcm-opt').forEach(btn => {
+          btn.addEventListener('click', () => checkQcmAnswer(btn.textContent, data.bonneReponse));
+        });
+      } else {
+        optsZone.style.display = 'none';
+        freeZone.style.display = 'block';
+        document.getElementById('qFreeInput').value = '';
+      }
+    } catch (err) {
+      document.getElementById('qLoading').innerHTML = `<p style="color:var(--danger);">${err.message || 'Erreur de génération.'}</p>`;
+    }
+  }
+
+  function checkQcmAnswer(chosen, correct) {
+    const isCorrect = chosen.trim() === correct.trim();
+    showFeedback(isCorrect, correct);
+  }
+
+  document.getElementById('qFreeSubmit').addEventListener('click', () => {
+    const userAnswer = document.getElementById('qFreeInput').value.trim().toLowerCase();
+    const correct = currentQuestion.reponse.trim().toLowerCase();
+    const isCorrect = userAnswer === correct || correct.includes(userAnswer) && userAnswer.length > 2;
+    showFeedback(isCorrect, currentQuestion.reponse);
+  });
+
+  function showFeedback(isCorrect, correctAnswer) {
+    if (isCorrect) score += 10;
+    document.getElementById('qScore').textContent = score;
+    const fb = document.getElementById('qFeedback');
+    fb.style.display = 'block';
+    fb.innerHTML = isCorrect
+      ? `<div class="badge-info" style="background:var(--accent-soft); color:var(--accent);"><i class="fa-solid fa-check"></i> Bonne réponse !</div>`
+      : `<div class="badge-info" style="background:rgba(255,92,122,0.15); color:var(--danger);"><i class="fa-solid fa-xmark"></i> Raté ! La bonne réponse était : ${correctAnswer}</div>`;
+
+    setTimeout(() => {
+      if (qCount >= MAX_QUESTIONS) endQuiz();
+      else loadQuestion();
+    }, 1800);
+  }
+
+  function endQuiz() {
+    askPseudoAndSubmit('quiz-ia', score);
+    setTimeout(() => loadLeaderboard('quiz-ia', 'leaderboardBody'), 500);
+    document.getElementById('quizZone').innerHTML = `
+      <div style="text-align:center; padding:30px;">
+        <h3>Quiz terminé !</h3>
+        <p style="margin:14px 0; font-size:1.3rem; color:var(--accent);">Score final : ${score}</p>
+        <button class="btn btn-primary" onclick="location.reload()">Rejouer</button>
+      </div>
+    `;
+  }
+
+  loadLeaderboard('quiz-ia', 'leaderboardBody');
+</script>

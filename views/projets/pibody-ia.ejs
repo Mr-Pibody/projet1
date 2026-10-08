@@ -1,0 +1,83 @@
+<%- include('../partials/back-button') %>
+
+<section class="projet-page">
+  <div class="container">
+    <div class="projet-header">
+      <div class="projet-eyebrow">Projet — Intelligence Artificielle</div>
+      <h1 class="projet-title">Pibody <span class="accent-text">IA</span></h1>
+      <p class="projet-desc">Une interface de questions-réponses reliée à une cascade côté serveur (Groq → Gemini → Mistral). Chaque envoi transmet uniquement le nouveau message, sans historique ajouté ni outils : au premier succès, la cascade s’arrête.</p>
+      <div class="badge-info" style="margin-top:14px;"><i class="fa-solid fa-circle-info"></i> Nécessite au moins une clé API configurée côté serveur pour répondre.</div>
+    </div>
+
+    <div class="projet-panel glass" style="max-width:750px; margin:0 auto;">
+      <div id="chatMessages" role="log" aria-label="Conversation avec Pibody IA" aria-live="polite" aria-relevant="additions text" style="height:420px; overflow-y:auto; display:flex; flex-direction:column; gap:14px; padding:10px; margin-bottom:16px;">
+        <div class="chat-msg chat-ia">Bonjour, je suis Pibody. Pose-moi une question !</div>
+      </div>
+      <div class="field-row-inline">
+        <input type="text" id="chatInput" maxlength="1200" autocomplete="off" aria-label="Votre message pour Pibody IA, 1 200 caractères maximum" placeholder="Écris ton message..." style="flex:1; padding:14px; border-radius:999px; border:1px solid var(--border-glass); background:var(--bg-secondary); color:var(--text-primary);">
+        <button class="btn btn-primary" id="sendBtn" type="button" aria-label="Envoyer le message à Pibody IA"><i class="fa-solid fa-paper-plane" aria-hidden="true"></i></button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .chat-msg { padding:14px 18px; border-radius:16px; max-width:80%; font-size:0.92rem; line-height:1.5; }
+  .chat-user { background: var(--accent); color:#04140f; align-self:flex-end; }
+  .chat-ia { background: var(--bg-secondary); border:1px solid var(--border-glass); align-self:flex-start; }
+  .chat-meta { font-size:0.7rem; color:var(--text-muted); margin-top:4px; }
+</style>
+
+<script>
+  const messagesBox = document.getElementById('chatMessages');
+  const input = document.getElementById('chatInput');
+
+  function addMessage(text, who, meta = '') {
+    const div = document.createElement('div');
+    div.className = 'chat-msg ' + (who === 'user' ? 'chat-user' : 'chat-ia');
+    div.textContent = text;
+    if (meta) {
+      const m = document.createElement('div');
+      m.className = 'chat-meta'; m.textContent = meta;
+      div.appendChild(m);
+    }
+    messagesBox.appendChild(div);
+    messagesBox.scrollTop = messagesBox.scrollHeight;
+  }
+
+  const sendButton = document.getElementById('sendBtn');
+
+  async function send() {
+    if (sendButton.disabled) return;
+    const message = input.value.trim();
+    if (!message) { input.focus(); return; }
+
+    sendButton.disabled = true;
+    input.readOnly = true;
+    addMessage(message, 'user');
+    input.value = '';
+    addMessage('Réponse en cours…', 'ia');
+    const loadingMsg = messagesBox.lastChild;
+
+    try {
+      const res = await fetch('/projets/pibody-ia/chat', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ message })
+      });
+      const data = await res.json().catch(() => ({}));
+      loadingMsg.remove();
+      if (res.ok && data.success && typeof data.reply === 'string') addMessage(data.reply, 'ia', `via ${data.provider}`);
+      else addMessage(data.error || 'Aucun fournisseur n’a pu répondre. Réessaie plus tard.', 'ia');
+    } catch (err) {
+      loadingMsg.remove();
+      addMessage('Erreur réseau, réessaie.', 'ia');
+    } finally {
+      sendButton.disabled = false;
+      input.readOnly = false;
+      input.focus();
+    }
+  }
+
+  sendButton.addEventListener('click', send);
+  input.addEventListener('keypress', (e) => { if (e.key === 'Enter') send(); });
+</script>

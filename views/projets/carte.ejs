@@ -1,0 +1,77 @@
+<%- include('../partials/back-button') %>
+
+<section class="projet-page">
+  <div class="container">
+    <div class="projet-header">
+      <div class="projet-eyebrow">Projet — Géolocalisation</div>
+      <h1 class="projet-title">Carte interactive</h1>
+      <p class="projet-desc">Cliquez sur la carte pour poser des points d'intérêt, calculez la distance entre deux points. Basé sur OpenStreetMap, 100% gratuit, sans clé API payante.</p>
+    </div>
+
+    <div class="projet-grid-2">
+      <div class="projet-panel glass" style="grid-column: span 2;">
+        <div id="map" style="height:500px; border-radius:14px;"></div>
+      </div>
+    </div>
+
+    <div class="projet-panel glass" style="margin-top:20px;">
+      <div class="field-row-inline">
+        <button class="btn btn-ghost btn-block" id="clearBtn"><i class="fa-solid fa-trash"></i> Effacer les points</button>
+        <button class="btn btn-ghost btn-block" id="locateBtn"><i class="fa-solid fa-location-crosshairs"></i> Me localiser</button>
+      </div>
+      <div id="distanceResult" style="margin-top:16px;"></div>
+    </div>
+  </div>
+</section>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  const map = L.map('map').setView([6.3654, 2.4183], 13); // Cotonou, Bénin par défaut
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  let markers = [];
+
+  function haversine(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLon/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  }
+
+  function updateDistance() {
+    const box = document.getElementById('distanceResult');
+    if (markers.length < 2) { box.innerHTML = ''; return; }
+    const a = markers[markers.length - 2].getLatLng();
+    const b = markers[markers.length - 1].getLatLng();
+    const dist = haversine(a.lat, a.lng, b.lat, b.lng);
+    box.innerHTML = `<div class="result-box"><div class="result-value">${dist.toFixed(2)} km</div><div class="result-label">Distance entre les 2 derniers points posés</div></div>`;
+  }
+
+  map.on('click', (e) => {
+    const marker = L.marker(e.latlng).addTo(map);
+    marker.bindPopup(`Point ${markers.length + 1}<br>${e.latlng.lat.toFixed(4)}, ${e.latlng.lng.toFixed(4)}`).openPopup();
+    markers.push(marker);
+    updateDistance();
+  });
+
+  document.getElementById('clearBtn').addEventListener('click', () => {
+    markers.forEach(m => map.removeLayer(m));
+    markers = [];
+    document.getElementById('distanceResult').innerHTML = '';
+  });
+
+  document.getElementById('locateBtn').addEventListener('click', () => {
+    if (!navigator.geolocation) { alert('Géolocalisation non supportée par votre navigateur.'); return; }
+    navigator.geolocation.getCurrentPosition((pos) => {
+      map.setView([pos.coords.latitude, pos.coords.longitude], 15);
+      const marker = L.marker([pos.coords.latitude, pos.coords.longitude]).addTo(map);
+      marker.bindPopup('Vous êtes ici').openPopup();
+      markers.push(marker);
+    }, () => alert('Impossible de récupérer votre position.'));
+  });
+</script>

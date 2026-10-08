@@ -1,0 +1,226 @@
+<section class="section-pad projects-section" id="projets" aria-labelledby="projects-title">
+  <div class="container">
+    <div class="section-heading reveal">
+      <p class="section-kicker">Projets réalisés</p>
+      <h2 class="section-title" id="projects-title">Du développement<br><span class="text-accent">à l’expérimentation IA.</span></h2>
+      <p class="section-intro">Des applications web, des outils interactifs et des expérimentations reliées à des données ou à des services externes. Les projets IA sont placés en premier ; les autres montrent l’étendue de ma pratique logicielle.</p>
+    </div>
+
+    <article class="project-feature glass reveal">
+      <div class="project-feature-copy">
+        <p class="project-feature-kicker"><span class="status-dot" aria-hidden="true"></span> Projet mis en avant · IA appliquée</p>
+        <h3>Pibody IA</h3>
+        <p>Un assistant conversationnel construit autour d’une cascade d’API : Groq, puis Gemini, puis Mistral. Le projet met en pratique l’intégration de modèles tiers, la gestion des erreurs et la conception d’une interface de chat.</p>
+        <p class="project-honesty-note">Le modèle n’est pas entraîné par moi : l’expérimentation porte sur l’intégration et l’orchestration de services existants.</p>
+        <dl class="project-feature-details">
+          <div><dt>Objectif</dt><dd>Tester plusieurs fournisseurs conversationnels dans une même application.</dd></div>
+          <div><dt>Contribution</dt><dd>Développement de l’interface de chat et du flux d’appel côté serveur.</dd></div>
+          <div><dt>Compétences mobilisées</dt><dd>Intégration d’API, configuration par environnement et logique de repli.</dd></div>
+        </dl>
+        <div class="project-tags"><span>Node.js</span><span>Express</span><span>API LLM</span></div>
+        <div class="project-feature-links">
+          <a href="/projets/pibody-ia" class="btn btn-primary">Essayer Pibody IA <span aria-hidden="true">↗</span></a>
+          <a href="https://github.com/Mr-Pibody/projet" class="text-link" target="_blank" rel="noopener noreferrer">Code source <span aria-hidden="true">↗</span></a>
+        </div>
+      </div>
+      <div class="project-feature-visual" aria-hidden="true">
+        <span class="orbit orbit-one"></span><span class="orbit orbit-two"></span>
+        <span class="ai-glyph">IA</span>
+        <span class="provider-chip provider-groq">Groq</span>
+        <span class="provider-chip provider-gemini">Gemini</span>
+        <span class="provider-chip provider-mistral">Mistral</span>
+      </div>
+    </article>
+
+    <div class="projects-toolbar">
+      <p class="projects-toolbar-label">Explorer les projets</p>
+      <div class="projects-filter" role="group" aria-label="Filtrer les projets">
+        <button class="filter-chip active" type="button" data-cat="tous" aria-pressed="true">Tous</button>
+        <button class="filter-chip" type="button" data-cat="ia" aria-pressed="false">IA</button>
+        <button class="filter-chip" type="button" data-cat="logiciel" aria-pressed="false">Développement &amp; données</button>
+        <button class="filter-chip" type="button" data-cat="outils" aria-pressed="false">Outils &amp; interactif</button>
+      </div>
+    </div>
+
+    <div class="projects-grid">
+      <a href="/projets/jeux/quiz-ia" class="project-card glass reveal" data-cat="ia">
+        <span class="project-card-top"><span class="project-card-index">IA / 02</span><span class="project-card-tag">Quiz IA</span></span>
+        <h3>Quiz généré par IA</h3>
+        <p>Génération de questions à la demande via la cascade de services conversationnels, intégrée à l’Arcade.</p>
+        <span class="project-card-stack">Node.js · API IA</span><span class="project-card-link">Lancer le quiz <span aria-hidden="true">↗</span></span>
+      </a>
+
+      <a href="/projets/algo-executeur" class="project-card glass reveal" data-cat="logiciel">
+        <span class="project-card-top"><span class="project-card-index">ALGO</span><span class="project-card-tag">Algorithmique</span></span>
+        <h3>Exécuteur d’algorithmes</h3>
+        <p>Visualisation pas à pas d’algorithmes de tri et de recherche pour observer leur exécution.</p>
+        <span class="project-card-stack">JavaScript · Algorithmes</span><span class="project-card-link">Ouvrir <span aria-hidden="true">↗</span></span>
+      </a>
+
+      <a href="/projets/panorama-web" class="project-card glass reveal" data-cat="logiciel">
+        <span class="project-card-top"><span class="project-card-index">DATA</span><span class="project-card-tag">Données</span></span>
+        <h3>Panorama mondial du Web</h3>
+        <p>Présentation de statistiques sur les technologies des sites web, avec attribution de la source W3Techs.</p>
+        <span class="project-card-stack">Data viz · Sources citées</span><span class="project-card-link">Ouvrir <span aria-hidden="true">↗</span></span>
+      </a>
+
+      <a href="/projets/observatoire-benin" class="project-card glass reveal" data-cat="logiciel">
+        <span class="project-card-top"><span class="project-card-index">DATA / BÉNIN</span><span class="project-card-tag">Données publiques</span></span>
+        <h3>Observatoire du numérique</h3>
+        <p>Trois séries nationales sur Internet et les abonnements numériques, chargées depuis l’API publique de la Banque mondiale et accompagnées de leurs définitions.</p>
+        <span class="project-card-stack">Node.js · SVG · Banque mondiale</span><span class="project-card-link">Explorer les indicateurs <span aria-hidden="true">↗</span></span>
+      </a>
+
+      <a href="/projets/carte" class="project-card glass reveal" data-cat="logiciel">
+        <span class="project-card-top"><span class="project-card-index">GÉO</span><span class="project-card-tag">Cartographie</span></span>
+        <h3>Carte interactive</h3>
+        <p>Exploration cartographique basée sur OpenStreetMap, avec géolocalisation et calcul de distance.</p>
+        <span class="project-card-stack">OpenStreetMap · JavaScript</span><span class="project-card-link">Ouvrir <span aria-hidden="true">↗</span></span>
+      </a>
+
+      <a href="/projets/vote" class="project-card glass reveal" data-cat="logiciel">
+        <span class="project-card-top"><span class="project-card-index">WEB</span><span class="project-card-tag">Application</span></span>
+        <h3>Plateforme de vote</h3>
+        <p>Création d’un événement et de catégories, puis collecte de votes avec une empreinte IP pour limiter les doublons.</p>
+        <span class="project-card-stack">Express · SQLite</span><span class="project-card-link">Ouvrir <span aria-hidden="true">↗</span></span>
+      </a>
+
+      <a href="/projets/sondage" class="project-card glass reveal" data-cat="logiciel">
+        <span class="project-card-top"><span class="project-card-index">WEB</span><span class="project-card-tag">Temps réel</span></span>
+        <h3>Questionnaires d’enquête</h3>
+        <p>Création de sondages, partage d’un lien de réponse et consultation des résultats actualisés en direct.</p>
+        <span class="project-card-stack">Express · Socket.IO · SQLite</span><span class="project-card-link">Ouvrir <span aria-hidden="true">↗</span></span>
+      </a>
+
+      <a href="/projets/annonces" class="project-card glass reveal" data-cat="logiciel">
+        <span class="project-card-top"><span class="project-card-index">WEB</span><span class="project-card-tag">Communauté</span></span>
+        <h3>Petites annonces</h3>
+        <p>Publication d’annonces avec texte et image, puis affichage dans un catalogue consultable.</p>
+        <span class="project-card-stack">Express · SQLite · Upload</span><span class="project-card-link">Ouvrir <span aria-hidden="true">↗</span></span>
+      </a>
+
+      <a href="/projets/salons" class="project-card glass reveal" data-cat="logiciel">
+        <span class="project-card-top"><span class="project-card-index">LIVE</span><span class="project-card-tag">Temps réel</span></span>
+        <h3>Salons éphémères</h3>
+        <p>Espaces de discussion en temps réel pour échanger du texte ou des médias, sans stockage persistant des messages.</p>
+        <span class="project-card-stack">Node.js · Socket.IO</span><span class="project-card-link">Ouvrir <span aria-hidden="true">↗</span></span>
+      </a>
+
+      <a href="/projets/boutique" class="project-card glass reveal" data-cat="logiciel">
+        <span class="project-card-top"><span class="project-card-index">FULL-STACK</span><span class="project-card-tag">Catalogue</span></span>
+        <h3>Catalogue boutique</h3>
+        <p>Gestion des produits avec espace d’administration et commande directe par WhatsApp.</p>
+        <span class="project-card-stack">Express · SQLite · Images</span><span class="project-card-link">Ouvrir <span aria-hidden="true">↗</span></span>
+      </a>
+
+      <a href="/projets/boutique/ecommerce" class="project-card glass reveal" data-cat="logiciel">
+        <figure class="project-card-thumb"><img src="/images/projet_ecommerce.jpg" alt="Capture de l’interface du projet e-commerce" loading="lazy" decoding="async"></figure>
+        <span class="project-card-top"><span class="project-card-index">WEB</span><span class="project-card-tag">E-commerce</span></span>
+        <h3>Boutique e-commerce</h3>
+        <p>Parcours de catalogue et de commande via WhatsApp ; aucun paiement en ligne n’est proposé.</p>
+        <span class="project-card-stack">Express · SQLite · WhatsApp</span><span class="project-card-link">Ouvrir <span aria-hidden="true">↗</span></span>
+      </a>
+
+      <a href="/projets/boutique/restaurant" class="project-card glass reveal" data-cat="logiciel">
+        <figure class="project-card-thumb"><img src="/images/projet_restaurant.jpg" alt="Capture de l’interface du projet de menu de restaurant" loading="lazy" decoding="async"></figure>
+        <span class="project-card-top"><span class="project-card-index">WEB</span><span class="project-card-tag">Restaurant</span></span>
+        <h3>Menu de restaurant</h3>
+        <p>Menu consultable et prise de commande par WhatsApp à partir d’un catalogue administrable.</p>
+        <span class="project-card-stack">Express · SQLite · WhatsApp</span><span class="project-card-link">Ouvrir <span aria-hidden="true">↗</span></span>
+      </a>
+
+      <a href="/projets/notes" class="project-card glass reveal" data-cat="outils">
+        <span class="project-card-top"><span class="project-card-index">OUTIL</span><span class="project-card-tag">Éducation</span></span>
+        <h3>Gestion de notes élèves</h3>
+        <p>Calcul de moyennes et de rangs, export Word et sauvegarde chiffrée des données.</p>
+        <span class="project-card-stack">Node.js · DOCX · AES-GCM</span><span class="project-card-link">Ouvrir <span aria-hidden="true">↗</span></span>
+      </a>
+
+      <a href="/projets/blocnotes" class="project-card glass reveal" data-cat="outils">
+        <span class="project-card-top"><span class="project-card-index">OUTIL</span><span class="project-card-tag">Confidentialité</span></span>
+        <h3>Bloc-notes chiffré</h3>
+        <p>Prise de notes locale et export/import d’un fichier chiffré avec AES-256-GCM.</p>
+        <span class="project-card-stack">Node.js · Chiffrement</span><span class="project-card-link">Ouvrir <span aria-hidden="true">↗</span></span>
+      </a>
+
+      <a href="/projets/cv-generator" class="project-card glass reveal" data-cat="outils">
+        <span class="project-card-top"><span class="project-card-index">PDF</span><span class="project-card-tag">Document</span></span>
+        <h3>Générateur de CV</h3>
+        <p>Formulaire de saisie et génération d’un document PDF téléchargeable.</p>
+        <span class="project-card-stack">Node.js · PDFKit</span><span class="project-card-link">Ouvrir <span aria-hidden="true">↗</span></span>
+      </a>
+
+      <a href="/projets/convertisseur" class="project-card glass reveal" data-cat="outils">
+        <span class="project-card-top"><span class="project-card-index">FICHIERS</span><span class="project-card-tag">Navigateur</span></span>
+        <h3>Convertisseur de fichiers</h3>
+        <p>Conversion CSV/JSON et redimensionnement d’images directement dans le navigateur.</p>
+        <span class="project-card-stack">JavaScript · Fichiers</span><span class="project-card-link">Ouvrir <span aria-hidden="true">↗</span></span>
+      </a>
+
+      <a href="/projets/markdown" class="project-card glass reveal" data-cat="outils">
+        <span class="project-card-top"><span class="project-card-index">PDF</span><span class="project-card-tag">Édition</span></span>
+        <h3>Markdown vers PDF</h3>
+        <p>Éditeur Markdown avec aperçu et export en PDF.</p>
+        <span class="project-card-stack">JavaScript · PDFKit</span><span class="project-card-link">Ouvrir <span aria-hidden="true">↗</span></span>
+      </a>
+
+      <a href="/projets/pomodoro" class="project-card glass reveal" data-cat="outils">
+        <span class="project-card-top"><span class="project-card-index">FOCUS</span><span class="project-card-tag">Productivité</span></span>
+        <h3>Time tracker / Pomodoro</h3>
+        <p>Minuteur de concentration avec historique des sessions conservé localement.</p>
+        <span class="project-card-stack">JavaScript · LocalStorage</span><span class="project-card-link">Ouvrir <span aria-hidden="true">↗</span></span>
+      </a>
+
+      <a href="/projets/qrcode" class="project-card glass reveal" data-cat="outils">
+        <span class="project-card-top"><span class="project-card-index">QR</span><span class="project-card-tag">Contact</span></span>
+        <h3>QR code de contact</h3>
+        <p>Génération d’une carte vCard sous forme de QR code, sans stockage serveur.</p>
+        <span class="project-card-stack">JavaScript · vCard</span><span class="project-card-link">Ouvrir <span aria-hidden="true">↗</span></span>
+      </a>
+
+      <a href="/projets/horloge" class="project-card glass reveal" data-cat="outils">
+        <span class="project-card-top"><span class="project-card-index">TEMPS</span><span class="project-card-tag">Utilitaire</span></span>
+        <h3>Horloge, alarme &amp; minuteur</h3>
+        <p>Trois outils du temps réunis dans une interface web.</p>
+        <span class="project-card-stack">JavaScript · Navigateur</span><span class="project-card-link">Ouvrir <span aria-hidden="true">↗</span></span>
+      </a>
+
+      <a href="/projets/calculatrice" class="project-card glass reveal" data-cat="outils">
+        <span class="project-card-top"><span class="project-card-index">CALCUL</span><span class="project-card-tag">Scientifique</span></span>
+        <h3>Calculatrice scientifique</h3>
+        <p>Calculs trigonométriques, puissances et logarithmes, évalués par un analyseur d’expressions.</p>
+        <span class="project-card-stack">JavaScript · Algorithmes</span><span class="project-card-link">Ouvrir <span aria-hidden="true">↗</span></span>
+      </a>
+
+      <a href="/projets/facture" class="project-card glass reveal" data-cat="outils">
+        <span class="project-card-top"><span class="project-card-index">PDF</span><span class="project-card-tag">Gestion</span></span>
+        <h3>Facture &amp; devis</h3>
+        <p>Création de documents avec lignes de produits et calcul automatique des montants.</p>
+        <span class="project-card-stack">Node.js · PDFKit</span><span class="project-card-link">Ouvrir <span aria-hidden="true">↗</span></span>
+      </a>
+
+      <a href="/projets/jeux" class="project-card glass reveal" data-cat="outils">
+        <span class="project-card-top"><span class="project-card-index">ARCADE</span><span class="project-card-tag">Jeux</span></span>
+        <h3>Arcade &amp; classement</h3>
+        <p>10 mini-jeux : logique, réflexes, quiz, mots mêlés et mots croisés, avec scores enregistrés.</p>
+        <span class="project-card-stack">JavaScript · Express · SQLite</span><span class="project-card-link">Ouvrir <span aria-hidden="true">↗</span></span>
+      </a>
+
+      <a href="/projets/jeux/mots-mele" class="project-card glass reveal" data-cat="outils">
+        <span class="project-card-top"><span class="project-card-index">ARCADE / 09</span><span class="project-card-tag">Vocabulaire</span></span>
+        <h3>Mots mêlés</h3>
+        <p>Une grille générée avec des mots liés à l’IA, au Web ou aux données.</p>
+        <span class="project-card-stack">JavaScript · Génération de grille</span><span class="project-card-link">Jouer <span aria-hidden="true">↗</span></span>
+      </a>
+
+      <a href="/projets/jeux/mots-croises" class="project-card glass reveal" data-cat="outils">
+        <span class="project-card-top"><span class="project-card-index">ARCADE / 10</span><span class="project-card-tag">Logique</span></span>
+        <h3>Mots croisés</h3>
+        <p>Une grille interactive et des définitions autour du code, des API et des bases.</p>
+        <span class="project-card-stack">JavaScript · Express · SQLite</span><span class="project-card-link">Jouer <span aria-hidden="true">↗</span></span>
+      </a>
+    </div>
+
+    <p class="projects-note">Chaque lien ouvre le projet correspondant ; les catalogues ne présentent que les éléments réellement publiés.</p>
+  </div>
+</section>

@@ -1,0 +1,110 @@
+<%- include('../partials/back-button') %>
+
+<section class="projet-page">
+  <div class="container">
+    <div class="projet-header">
+      <div class="projet-eyebrow">Projet — Outil du quotidien</div>
+      <h1 class="projet-title">Horloge / Alarme / Minuteur</h1>
+      <p class="projet-desc">Trois outils du temps réunis. L'alarme fonctionne tant que cet onglet reste ouvert (limitation normale des navigateurs).</p>
+    </div>
+
+    <div class="projects-filter">
+      <button class="filter-chip active" data-tab="horloge">Horloge</button>
+      <button class="filter-chip" data-tab="alarme">Alarme</button>
+      <button class="filter-chip" data-tab="minuteur">Minuteur</button>
+    </div>
+
+    <div id="tab-horloge" class="projet-panel glass" style="text-align:center; padding:60px 20px;">
+      <div style="font-family:var(--font-mono); font-size:5rem; font-weight:700; color:var(--accent);" id="clockDisplay">00:00:00</div>
+      <div style="color:var(--text-secondary); margin-top:10px;" id="dateDisplay"></div>
+    </div>
+
+    <div id="tab-alarme" class="projet-panel glass" style="display:none; max-width:500px;">
+      <div class="field-row"><label>Heure de l'alarme</label><input type="time" id="alarmTime"></div>
+      <button class="btn btn-primary btn-block" id="setAlarmBtn"><i class="fa-solid fa-bell"></i> Activer l'alarme</button>
+      <div id="alarmStatus" style="margin-top:16px; color:var(--accent); font-weight:600;"></div>
+    </div>
+
+    <div id="tab-minuteur" class="projet-panel glass" style="display:none; max-width:500px; text-align:center;">
+      <div class="field-row-inline">
+        <div class="field-row"><label>Minutes</label><input type="number" id="timerMin" value="5" min="0"></div>
+        <div class="field-row"><label>Secondes</label><input type="number" id="timerSec" value="0" min="0" max="59"></div>
+      </div>
+      <div style="font-family:var(--font-mono); font-size:3rem; font-weight:700; color:var(--accent); margin:20px 0;" id="timerCountDisplay">05:00</div>
+      <div class="field-row-inline" style="justify-content:center;">
+        <button class="btn btn-primary" id="timerStartBtn"><i class="fa-solid fa-play"></i> Démarrer</button>
+        <button class="btn btn-ghost" id="timerStopBtn"><i class="fa-solid fa-stop"></i> Arrêter</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  // ---- Tabs ----
+  document.querySelectorAll('[data-tab]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-tab]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      ['horloge', 'alarme', 'minuteur'].forEach(t => {
+        document.getElementById('tab-' + t).style.display = t === btn.dataset.tab ? 'block' : 'none';
+      });
+    });
+  });
+
+  // ---- Horloge ----
+  function updateClock() {
+    const now = new Date();
+    document.getElementById('clockDisplay').textContent = now.toLocaleTimeString('fr-FR');
+    document.getElementById('dateDisplay').textContent = now.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  // ---- Alarme ----
+  let alarmInterval = null;
+  document.getElementById('setAlarmBtn').addEventListener('click', () => {
+    const time = document.getElementById('alarmTime').value;
+    if (!time) return;
+    if (Notification && Notification.permission === 'default') Notification.requestPermission();
+    document.getElementById('alarmStatus').textContent = `Alarme programmée pour ${time}`;
+    if (alarmInterval) clearInterval(alarmInterval);
+    alarmInterval = setInterval(() => {
+      const now = new Date();
+      const current = now.toTimeString().slice(0, 5);
+      if (current === time) {
+        if (Notification && Notification.permission === 'granted') new Notification('⏰ Alarme', { body: 'Il est ' + time });
+        else alert('⏰ Alarme : il est ' + time);
+        clearInterval(alarmInterval);
+        document.getElementById('alarmStatus').textContent = 'Alarme déclenchée !';
+      }
+    }, 1000);
+  });
+
+  // ---- Minuteur ----
+  let timerInterval = null;
+  let timerRemaining = 0;
+
+  function updateTimerDisplay() {
+    const m = Math.floor(timerRemaining / 60).toString().padStart(2, '0');
+    const s = (timerRemaining % 60).toString().padStart(2, '0');
+    document.getElementById('timerCountDisplay').textContent = `${m}:${s}`;
+  }
+
+  document.getElementById('timerStartBtn').addEventListener('click', () => {
+    const min = parseInt(document.getElementById('timerMin').value) || 0;
+    const sec = parseInt(document.getElementById('timerSec').value) || 0;
+    timerRemaining = min * 60 + sec;
+    updateTimerDisplay();
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      timerRemaining--;
+      updateTimerDisplay();
+      if (timerRemaining <= 0) {
+        clearInterval(timerInterval);
+        alert('⏱️ Temps écoulé !');
+      }
+    }, 1000);
+  });
+
+  document.getElementById('timerStopBtn').addEventListener('click', () => { clearInterval(timerInterval); });
+</script>

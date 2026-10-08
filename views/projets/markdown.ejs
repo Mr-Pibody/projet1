@@ -1,0 +1,68 @@
+<%- include('../partials/back-button') %>
+
+<section class="projet-page">
+  <div class="container">
+    <div class="projet-header">
+      <div class="projet-eyebrow">Projet 08 — Outil pratique</div>
+      <h1 class="projet-title">Markdown → PDF</h1>
+      <p class="projet-desc">Rédigez en Markdown, visualisez l'aperçu en direct, exportez en PDF stylé.</p>
+    </div>
+
+    <div class="field-row" style="max-width:400px;">
+      <label>Titre du document</label>
+      <input type="text" id="mdTitle" value="Mon document" placeholder="Titre">
+    </div>
+
+    <div class="projet-grid-2">
+      <div class="projet-panel glass">
+        <h3 style="margin-bottom:16px;">Éditeur</h3>
+        <textarea id="mdInput" rows="18" style="width:100%; padding:16px; border-radius:10px; border:1px solid var(--border-glass); background:var(--bg-secondary); color:var(--text-primary); font-family:var(--font-mono); font-size:0.9rem;"># Titre principal
+
+## Sous-titre
+
+Voici un paragraphe avec du **texte en gras** et de *l'italique*.
+
+- Premier point
+- Deuxième point
+- Troisième point
+
+### Une autre section
+
+Continuez à écrire ici...</textarea>
+        <button class="btn btn-primary btn-block" id="exportBtn" style="margin-top:16px;"><i class="fa-solid fa-file-pdf"></i> Exporter en PDF</button>
+      </div>
+
+      <div class="projet-panel glass">
+        <h3 style="margin-bottom:16px;">Aperçu live</h3>
+        <div id="mdPreview" style="background:#fff; color:#222; padding:24px; border-radius:10px; min-height:400px; font-size:0.92rem; line-height:1.6;"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/marked@13.0.0/marked.min.js"></script>
+<script>
+  const input = document.getElementById('mdInput');
+  const preview = document.getElementById('mdPreview');
+
+  function render() { preview.innerHTML = marked.parse(input.value); }
+  input.addEventListener('input', render);
+  render();
+
+  document.getElementById('exportBtn').addEventListener('click', async () => {
+    const titre = document.getElementById('mdTitle').value || 'document';
+    const res = await fetch('/api/pdf/markdown', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ titre, contenu: input.value })
+    });
+    if (res.ok) {
+      const blob = await res.blob();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = `${titre}.pdf`;
+      document.body.appendChild(a); a.click(); a.remove();
+    } else {
+      alert('Erreur lors de la génération du PDF.');
+    }
+  });
+</script>

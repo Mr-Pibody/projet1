@@ -1,0 +1,162 @@
+<%- include('../partials/back-button') %>
+
+<section class="projet-page">
+  <div class="container" id="surveyResultsApp" data-code="<%= sondage.code %>">
+    <header class="projet-header">
+      <p class="projet-eyebrow">Résultats du sondage</p>
+      <h1 class="projet-title"><%= sondage.titre %></h1>
+      <p class="projet-desc"><span id="totalReponses">0</span> réponse(s) reçue(s). Cette page se met à jour automatiquement.</p>
+    </header>
+
+    <div id="resultatsContainer" aria-live="polite"></div>
+  </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const app = document.getElementById('surveyResultsApp');
+  const code = app.dataset.code;
+  const socket = typeof io === 'function' ? io() : null;
+  const charts = new Map();
+  const resultCards = document.getElementById('resultatsContainer');
+
+  if (socket) socket.emit('rejoindre-salon', { code: 'sondage-' + code });
+
+  function makeCell(tag, text, className) {
+    const element = document.createElement(tag);
+    if (className) element.className = className;
+    element.textContent = text;
+    return element;
+  }
+
+  function buildCards(results) {
+    resultCards.replaceChildren();
+    results.forEach((result, index) => {
+      const card = document.createElement('section');
+      card.className = 'projet-panel glass survey-result-card';
+      card.appendChild(makeCell('h2', result.question, 'survey-result-question'));
+
+      if (result.type === 'texte') {
+        const answers = document.createElement('div');
+        answers.id = `text-results-${index}`;
+        answers.className = 'survey-text-results';
+        card.appendChild(answers);
+      } else {
+        if (typeof window.Chart === 'function') {
+          const chartWrap = document.createElement('div');
+          chartWrap.className = 'chart-wrap survey-chart-wrap';
+          const canvas = document.createElement('canvas');
+          canvas.id = `survey-chart-${index}`;
+          canvas.setAttribute('aria-label', `Graphique pour ${result.question}`);
+          chartWrap.appendChild(canvas);
+          card.appendChild(chartWrap);
+        } else {
+          card.appendChild(makeCell('p', 'Le graphique nécessite une connexion au CDN ; le détail chiffré reste disponible ci-dessous.', 'chart-fallback-note'));
+        }
+        const detail = document.createElement('div');
+        detail.id = `survey-detail-${index}`;
+        detail.className = 'survey-result-detail';
+        card.appendChild(detail);
+      }
+      resultCards.appendChild(card);
+    });
+  }
+
+  function renderTable(container, labels, values, total) {
+    const table = document.createElement('table');
+    table.className = 'table-clean';
+    const head = document.createElement('thead');
+    const headerRow = document.createElement('tr');
+    ['Option', 'Voix', 'Pourcentage'].forEach(label => headerRow.appendChild(makeCell('th', label)));
+    head.appendChild(headerRow);
+    table.appendChild(head);
+
+    const body = document.createElement('tbody');
+    labels.forEach((label, index) => {
+      const row = document.createElement('tr');
+      const count = Number(values[index]) || 0;
+      const percentage = total > 0 ? `${((count / total) * 100).toFixed(1)}%` : '0,0 %';
+      row.append(makeCell('td', label), makeCell('td', String(count)), makeCell('td', percentage));
+      body.appendChild(row);
+    });
+    table.appendChild(body);
+    container.replaceChildren(table);
+    if (total === 0) container.appendChild(makeCell('p', 'En attente des premières réponses.', 'survey-waiting-note'));
+  }
+
+  function renderTextAnswers(container, answers) {
+    container.replaceChildren();
+    if (!answers.length) {
+      container.appendChild(makeCell('p', 'Pas encore de réponse. Elles apparaîtront ici après participation.', 'survey-waiting-note'));
+      return;
+    }
+    answers.forEach(answer => {
+      const quote = makeCell('blockquote', answer, 'survey-answer-quote');
+      container.appendChild(quote);
+    });
+  }
+
+  async function loadResults() {
+    try {
+      const response = await fetch(`/projets/sondage/api/resultats/${encodeURIComponent(code)}`);
+      const data = await response.json();
+      if (!response.ok || !Array.isArray(data.resultats)) throw new Error('Résultats indisponibles.');
+      document.getElementById('totalReponses').textContent = String(data.totalReponses || 0);
+
+      if (!resultCards.dataset.built) {
+        buildCards(data.resultats);
+        resultCards.dataset.built = 'true';
+      }
+
+      data.resultats.forEach((result, index) => {
+        if (result.type === 'texte') {
+          const target = document.getElementById(`text-results-${index}`);
+          if (target) renderTextAnswers(target, Array.isArray(result.reponses) ? result.reponses : []);
+          return;
+        }
+
+        const labels = Object.keys(result.counts || {});
+        const values = labels.map(label => Number(result.counts[label]) || 0);
+        const total = values.reduce((sum, value) => sum + value, 0);
+        const detail = document.getElementById(`survey-detail-${index}`);
+        if (detail) renderTable(detail, labels, values, total);
+
+        const canvas = document.getElementById(`survey-chart-${index}`);
+        if (!canvas || typeof window.Chart !== 'function') return;
+        const existingChart = charts.get(index);
+        if (existingChart) {
+          existingChart.data.labels = labels;
+          existingChart.data.datasets[0].data = values;
+          existingChart.update('none');
+          return;
+        }
+        const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#b7cc8b';
+        charts.set(index, new Chart(canvas, {
+          type: 'bar',
+          data: { labels, datasets: [{ data: values, backgroundColor: accent, borderRadius: 3 }] },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { ticks: { color: '#a6b1a6' }, grid: { display: false } },
+              y: { beginAtZero: true, ticks: { precision: 0, color: '#a6b1a6' }, grid: { color: 'rgba(206,220,205,0.12)' } }
+            }
+          }
+        }));
+      });
+    } catch (error) {
+      const message = makeCell('p', error.message || 'Les résultats n’ont pas pu être chargés.', 'survey-waiting-note');
+      if (!resultCards.childElementCount) resultCards.appendChild(message);
+    }
+  }
+
+  if (socket) socket.on('nouvelle-reponse', loadResults);
+  loadResults();
+  const refreshTimer = window.setInterval(loadResults, 12000);
+  window.addEventListener('pagehide', () => {
+    window.clearInterval(refreshTimer);
+    charts.forEach(chart => chart.destroy());
+  }, { once: true });
+</script>

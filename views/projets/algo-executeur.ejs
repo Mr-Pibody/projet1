@@ -1,0 +1,126 @@
+<%- include('../partials/back-button') %>
+
+<section class="projet-page">
+  <div class="container">
+    <div class="projet-header">
+      <div class="projet-eyebrow">Projet — Pédagogie informatique</div>
+      <h1 class="projet-title">Exécuteur d'algorithmes</h1>
+      <p class="projet-desc">Écris ton propre algorithme en pseudo-code français (comme AlgoBox), exécute-le et observe le résultat. Tout s'exécute dans ton navigateur — rien n'est envoyé au serveur.</p>
+    </div>
+
+    <div class="projects-filter">
+      <button class="filter-chip active" data-example="vide">Vide</button>
+      <button class="filter-chip" data-example="boucle">Boucle simple</button>
+      <button class="filter-chip" data-example="condition">Condition</button>
+      <button class="filter-chip" data-example="somme">Somme 1 à N</button>
+      <button class="filter-chip" data-example="tableau_max">Recherche max</button>
+    </div>
+
+    <div class="projet-grid-2">
+      <div class="projet-panel glass">
+        <h3 style="margin-bottom:14px;">Éditeur</h3>
+        <textarea id="codeEditor" rows="20" style="width:100%; padding:16px; border-radius:10px; border:1px solid var(--border-glass); background:var(--bg-secondary); color:var(--text-primary); font-family:var(--font-mono); font-size:0.88rem; line-height:1.6;" spellcheck="false"></textarea>
+        <button class="btn btn-primary btn-block" id="runBtn" style="margin-top:16px;"><i class="fa-solid fa-play"></i> Exécuter</button>
+      </div>
+
+      <div class="projet-panel glass">
+        <h3 style="margin-bottom:14px;">Console de sortie</h3>
+        <div id="outputConsole" style="background:#05070d; border-radius:10px; padding:18px; min-height:300px; font-family:var(--font-mono); font-size:0.88rem; color:#00f0c0; white-space:pre-wrap; overflow-y:auto; max-height:480px;">— En attente d'exécution —</div>
+
+        <div style="margin-top:20px;">
+          <h4 style="font-size:0.9rem; margin-bottom:10px; color:var(--text-secondary);">Aide-mémoire de syntaxe</h4>
+          <div class="badge-info" style="display:block; font-size:0.78rem; line-height:1.7; padding:14px;">
+            <code>x PREND_LA_VALEUR 5</code><br>
+            <code>AFFICHER x</code><br>
+            <code>POUR i ALLANT_DE 1 A 10 ... FIN_POUR</code><br>
+            <code>TANT_QUE condition FAIRE ... FIN_TANT_QUE</code><br>
+            <code>SI condition ALORS ... SINON ... FIN_SI</code><br>
+            Opérateurs : <code>+ - * / &gt; &lt; &gt;= &lt;= = &lt;&gt; ET OU NON</code>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="/js/algo-interpreter.js"></script>
+<script>
+  const editor = document.getElementById('codeEditor');
+  const consoleBox = document.getElementById('outputConsole');
+
+  const EXAMPLES = {
+    vide: `VARIABLES x EN NOMBRE
+DEBUT
+x PREND_LA_VALEUR 0
+AFFICHER x
+FIN`,
+    boucle: `VARIABLES i EN NOMBRE
+DEBUT
+POUR i ALLANT_DE 1 A 10
+AFFICHER i
+FIN_POUR
+FIN`,
+    condition: `VARIABLES x EN NOMBRE
+DEBUT
+x PREND_LA_VALEUR 15
+SI x > 10 ALORS
+AFFICHER 'x est grand'
+SINON
+AFFICHER 'x est petit'
+FIN_SI
+FIN`,
+    somme: `VARIABLES somme EN NOMBRE
+VARIABLES i EN NOMBRE
+VARIABLES n EN NOMBRE
+DEBUT
+n PREND_LA_VALEUR 100
+somme PREND_LA_VALEUR 0
+i PREND_LA_VALEUR 1
+TANT_QUE i <= n FAIRE
+somme PREND_LA_VALEUR somme + i
+i PREND_LA_VALEUR i + 1
+FIN_TANT_QUE
+AFFICHER 'La somme de 1 a 100 est :'
+AFFICHER somme
+FIN`,
+    tableau_max: `VARIABLES a EN NOMBRE
+VARIABLES b EN NOMBRE
+VARIABLES c EN NOMBRE
+VARIABLES maximum EN NOMBRE
+DEBUT
+a PREND_LA_VALEUR 12
+b PREND_LA_VALEUR 47
+c PREND_LA_VALEUR 23
+maximum PREND_LA_VALEUR a
+SI b > maximum ALORS
+maximum PREND_LA_VALEUR b
+FIN_SI
+SI c > maximum ALORS
+maximum PREND_LA_VALEUR c
+FIN_SI
+AFFICHER 'Le maximum est :'
+AFFICHER maximum
+FIN`
+  };
+
+  document.querySelectorAll('[data-example]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-example]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      editor.value = EXAMPLES[btn.dataset.example];
+    });
+  });
+
+  editor.value = EXAMPLES.vide;
+
+  document.getElementById('runBtn').addEventListener('click', () => {
+    const result = AlgoInterpreter.run(editor.value);
+    if (result.success) {
+      consoleBox.textContent = result.output.length ? result.output.join('\n') : '(Aucune sortie produite par AFFICHER)';
+      consoleBox.style.color = '#00f0c0';
+    } else {
+      consoleBox.textContent = `Erreur${result.line ? ' (ligne ' + result.line + ')' : ''} : ${result.error}\n\n--- Sortie produite avant l'erreur ---\n${result.output.join('\n')}`;
+      consoleBox.style.color = '#ff5c7a';
+    }
+  });
+</script>

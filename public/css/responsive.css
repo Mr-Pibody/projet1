@@ -1,0 +1,44 @@
+/* Garde-fous responsive communs aux nombreuses pages d’outils existantes. */
+main, main > *, .container, .projet-page, .projet-header, .projet-panel { min-width: 0; }
+#sequenceDisplay, #optionsDisplay { max-width: 100%; flex-wrap: wrap; }
+.projet-page { padding-top: 118px; }
+.projet-page .container { width: min(100% - 48px, 1180px); }
+.projet-title, .projet-desc, .projet-panel, .result-box, .field-row { overflow-wrap: anywhere; }
+.projet-panel { padding: clamp(18px, 3.5vw, 32px); }
+.projet-page input, .projet-page select, .projet-page textarea, .projet-page button { max-width: 100%; }
+.projet-page input, .projet-page select, .projet-page textarea { min-width: 0; }
+.projet-page pre, .projet-page code { max-width: 100%; overflow-wrap: anywhere; white-space: pre-wrap; }
+.projet-page canvas, .projet-page svg, .projet-page video { max-width: 100%; }
+.projet-page .chart-wrap { min-width: 0; }
+.table-clean { width: 100%; }
+
+@media (max-width: 900px) {
+  .projet-page .container { width: min(100% - 36px, 1180px); }
+  .projet-grid-2 { grid-template-columns: minmax(0, 1fr); }
+  .projet-page .projet-grid-2 > * { grid-column: 1 / -1 !important; }
+  #map { width: 100%; max-width: 100%; } 
+  .contact-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .projet-page { padding: 100px 0 78px; }
+  .projet-page .container { width: min(100% - 30px, 1180px); }
+  .projet-header { margin-bottom: 28px; }
+  .projet-panel { margin-bottom: 16px; border-radius: var(--radius-md); }
+  .field-row-inline { flex-direction: column; gap: 0; }
+  .field-row-inline > div { width: 100%; min-width: 0; }
+  .table-clean { display: block; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; }
+  .table-clean th, .table-clean td { padding: 9px 10px; }
+  .chart-wrap { height: 260px; }
+  #map { height: 360px !important; }
+  .result-box { padding: 18px; }
+  .result-box .result-value { font-size: clamp(1.55rem, 8vw, 2.2rem); }
+  #calcButtons { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; }
+  .projet-page .btn { white-space: normal; }
+}
+
+@media (max-width: 380px) {
+  .projet-page .container { width: calc(100% - 24px); }
+  .projet-page .projet-panel { padding: 15px; }
+  .projet-page .btn { padding-inline: 12px; font-size: 0.86rem; }
+}

@@ -1,0 +1,143 @@
+<%- include('../partials/back-button') %>
+
+<section class="projet-page">
+  <div class="container">
+    <div class="projet-header">
+      <div class="projet-eyebrow">Projet 07 — Outil pratique</div>
+      <h1 class="projet-title">Convertisseur de fichiers</h1>
+      <p class="projet-desc">CSV ↔ JSON et redimensionnement d'images. Tout se passe dans votre navigateur, aucun fichier n'est envoyé au serveur.</p>
+    </div>
+
+    <div class="projet-grid-2">
+      <div class="projet-panel glass">
+        <h3 style="margin-bottom:16px;"><i class="fa-solid fa-arrows-rotate"></i> CSV ↔ JSON</h3>
+        <div class="field-row">
+          <label>Sens de conversion</label>
+          <select id="convDirection">
+            <option value="csv2json">CSV → JSON</option>
+            <option value="json2csv">JSON → CSV</option>
+          </select>
+        </div>
+        <div class="field-row">
+          <label>Collez votre contenu</label>
+          <textarea id="convInput" rows="8" placeholder="nom,age&#10;Alice,30&#10;Bob,25"></textarea>
+        </div>
+        <button class="btn btn-primary btn-block" id="convBtn"><i class="fa-solid fa-bolt"></i> Convertir</button>
+        <div class="field-row" style="margin-top:16px;">
+          <label>Résultat</label>
+          <textarea id="convOutput" rows="8" readonly></textarea>
+        </div>
+        <button class="btn btn-ghost btn-block" id="convDownload"><i class="fa-solid fa-download"></i> Télécharger le résultat</button>
+      </div>
+
+      <div class="projet-panel glass">
+        <h3 style="margin-bottom:16px;"><i class="fa-solid fa-image"></i> Redimensionner une image</h3>
+        <div class="upload-zone" id="imgDrop">
+          <i class="fa-solid fa-image"></i>
+          <p>Cliquez ou glissez une image ici</p>
+          <input type="file" id="imgInput" accept="image/*" style="display:none;">
+        </div>
+        <div class="field-row-inline" style="margin-top:16px;">
+          <div class="field-row"><label>Largeur max (px)</label><input type="number" id="imgWidth" value="800"></div>
+          <div class="field-row"><label>Qualité (%)</label><input type="number" id="imgQuality" value="80" min="10" max="100"></div>
+        </div>
+        <canvas id="imgCanvas" style="display:none; max-width:100%; border-radius:10px; margin-top:12px;"></canvas>
+        <button class="btn btn-primary btn-block" id="imgResizeBtn" style="margin-top:12px; display:none;"><i class="fa-solid fa-download"></i> Télécharger l'image redimensionnée</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  // ---- CSV <-> JSON ----
+  function csvToJson(csv) {
+    const lines = csv.trim().split('\n');
+    const headers = lines[0].split(',').map(h => h.trim());
+    const rows = lines.slice(1).map(line => {
+      const values = line.split(',');
+      const obj = {};
+      headers.forEach((h, i) => obj[h] = values[i] ? values[i].trim() : '');
+      return obj;
+    });
+    return JSON.stringify(rows, null, 2);
+  }
+
+  function jsonToCsv(json) {
+    const arr = JSON.parse(json);
+    if (!arr.length) return '';
+    const headers = Object.keys(arr[0]);
+    const lines = [headers.join(',')];
+    arr.forEach(obj => lines.push(headers.map(h => obj[h]).join(',')));
+    return lines.join('\n');
+  }
+
+  document.getElementById('convBtn').addEventListener('click', () => {
+    const dir = document.getElementById('convDirection').value;
+    const input = document.getElementById('convInput').value;
+    try {
+      const output = dir === 'csv2json' ? csvToJson(input) : jsonToCsv(input);
+      document.getElementById('convOutput').value = output;
+    } catch (err) {
+      alert('Erreur de conversion : vérifiez le format de votre contenu.');
+    }
+  });
+
+  document.getElementById('convDownload').addEventListener('click', () => {
+    const dir = document.getElementById('convDirection').value;
+    const output = document.getElementById('convOutput').value;
+    if (!output) return;
+    const ext = dir === 'csv2json' ? 'json' : 'csv';
+    const blob = new Blob([output], { type: 'text/plain' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = `converti.${ext}`;
+    document.body.appendChild(a); a.click(); a.remove();
+  });
+
+  // ---- Image resize (Canvas API) ----
+  const imgDrop = document.getElementById('imgDrop');
+  const imgInput = document.getElementById('imgInput');
+  let loadedImg = null;
+
+  imgDrop.addEventListener('click', () => imgInput.click());
+  imgInput.addEventListener('change', e => { if (e.target.files.length) loadImage(e.target.files[0]); });
+  imgDrop.addEventListener('dragover', e => { e.preventDefault(); imgDrop.classList.add('dragover'); });
+  imgDrop.addEventListener('drop', e => {
+    e.preventDefault(); imgDrop.classList.remove('dragover');
+    if (e.dataTransfer.files.length) loadImage(e.dataTransfer.files[0]);
+  });
+
+  function loadImage(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => { loadedImg = img; renderResized(); };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function renderResized() {
+    if (!loadedImg) return;
+    const maxW = parseInt(document.getElementById('imgWidth').value) || 800;
+    const ratio = Math.min(1, maxW / loadedImg.width);
+    const canvas = document.getElementById('imgCanvas');
+    canvas.width = loadedImg.width * ratio;
+    canvas.height = loadedImg.height * ratio;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(loadedImg, 0, 0, canvas.width, canvas.height);
+    canvas.style.display = 'block';
+    document.getElementById('imgResizeBtn').style.display = 'flex';
+  }
+
+  document.getElementById('imgWidth').addEventListener('input', renderResized);
+
+  document.getElementById('imgResizeBtn').addEventListener('click', () => {
+    const canvas = document.getElementById('imgCanvas');
+    const quality = (parseInt(document.getElementById('imgQuality').value) || 80) / 100;
+    canvas.toBlob(blob => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = 'image_redimensionnee.jpg';
+      document.body.appendChild(a); a.click(); a.remove();
+    }, 'image/jpeg', quality);
+  });
+</script>

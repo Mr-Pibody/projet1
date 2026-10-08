@@ -1,0 +1,81 @@
+<%- include('../../partials/back-button') %>
+
+<section class="projet-page">
+  <div class="container">
+    <div class="projet-header">
+      <div class="projet-eyebrow">Arcade — Jeu 2</div>
+      <h1 class="projet-title">Reaction Rapide</h1>
+      <p class="projet-desc">Cliquez les cibles néon dès qu'elles apparaissent. 10 cibles, le plus rapide gagne.</p>
+    </div>
+
+    <div class="projet-grid-2">
+      <div class="projet-panel glass">
+        <div id="gameZone" style="position:relative; height:400px; background:#05070d; border-radius:12px; overflow:hidden;">
+          <button class="btn btn-primary" id="startBtn" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);">Commencer</button>
+        </div>
+        <div class="badge-info" style="margin-top:14px;"><i class="fa-solid fa-stopwatch"></i> <span id="statusText">Cliquez "Commencer"</span></div>
+      </div>
+      <div class="projet-panel glass">
+        <h3 style="margin-bottom:16px;">🏆 Meilleurs scores</h3>
+        <p style="color:var(--text-secondary); font-size:0.82rem; margin-bottom:10px;">Score = temps de réaction moyen (ms). Plus bas = meilleur.</p>
+        <table class="table-clean"><thead><tr><th>#</th><th>Joueur</th><th>Score</th></tr></thead><tbody id="leaderboardBody"></tbody></table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="/js/leaderboard.js"></script>
+<script>
+  const zone = document.getElementById('gameZone');
+  let round = 0, totalTime = 0, targetStartTime, maxRounds = 10;
+
+  function nextTarget() {
+    if (round >= maxRounds) { endGame(); return; }
+    round++;
+    document.getElementById('statusText').textContent = `Cible ${round}/${maxRounds}`;
+    const delay = 500 + Math.random() * 1500;
+    setTimeout(() => {
+      const target = document.createElement('div');
+      const size = 50;
+      target.style.position = 'absolute';
+      target.style.width = size + 'px'; target.style.height = size + 'px';
+      target.style.borderRadius = '50%';
+      target.style.background = 'radial-gradient(circle, #00f0c0, #7c5cff)';
+      target.style.boxShadow = '0 0 20px #00f0c0';
+      target.style.left = Math.random() * (zone.clientWidth - size) + 'px';
+      target.style.top = Math.random() * (zone.clientHeight - size) + 'px';
+      target.style.cursor = 'pointer';
+      targetStartTime = performance.now();
+      target.addEventListener('click', () => {
+        const reaction = performance.now() - targetStartTime;
+        totalTime += reaction;
+        target.remove();
+        nextTarget();
+      });
+      zone.appendChild(target);
+    }, delay);
+  }
+
+  document.getElementById('startBtn').addEventListener('click', () => {
+    ensurePseudoThenStart(() => {
+      document.getElementById('startBtn').remove();
+      round = 0; totalTime = 0;
+      nextTarget();
+    });
+  });
+
+  function endGame() {
+    const avg = Math.round(totalTime / maxRounds);
+    document.getElementById('statusText').textContent = `Terminé ! Temps moyen : ${avg} ms`;
+    askPseudoAndSubmit('reaction-rapide', avg);
+    setTimeout(() => loadLeaderboard('reaction-rapide', 'leaderboardBody'), 500);
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-primary';
+    btn.style.position = 'absolute'; btn.style.top = '50%'; btn.style.left = '50%'; btn.style.transform = 'translate(-50%,-50%)';
+    btn.textContent = 'Recommencer';
+    btn.addEventListener('click', () => { btn.remove(); round = 0; totalTime = 0; nextTarget(); });
+    zone.appendChild(btn);
+  }
+
+  loadLeaderboard('reaction-rapide', 'leaderboardBody');
+</script>

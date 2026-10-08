@@ -1,0 +1,72 @@
+<%- include('../partials/back-button') %>
+
+<section class="projet-page">
+  <div class="container">
+    <div class="projet-header">
+      <div class="projet-eyebrow">Projet — Data Visualisation</div>
+      <h1 class="projet-title">Panorama mondial des sites web</h1>
+      <p class="projet-desc">Répartition des technologies utilisées par les sites web dans le monde, basée sur des statistiques publiques réelles — pas une estimation générée par IA.</p>
+      <div class="badge-info" style="margin-top:14px;"><i class="fa-solid fa-circle-info"></i> Source : W3Techs (analyse des 10 millions de sites les plus visités), données 2026. Mis à jour manuellement, pas en temps réel.</div>
+    </div>
+
+    <div class="projet-grid-2">
+      <div class="projet-panel glass">
+        <h3 style="margin-bottom:16px;">Répartition par CMS (tous sites)</h3>
+        <div class="chart-wrap"><canvas id="cmsChart"></canvas></div>
+      </div>
+      <div class="projet-panel glass">
+        <h3 style="margin-bottom:16px;">Sites avec CMS vs sans CMS</h3>
+        <div class="chart-wrap"><canvas id="noCmsChart"></canvas></div>
+      </div>
+    </div>
+
+    <div class="projet-panel glass" style="margin-top:24px;">
+      <h3 style="margin-bottom:16px;">Chiffres clés</h3>
+      <div class="stats-grid">
+        <div class="stat-card glass"><div class="stat-number" data-count="42">0</div><div class="stat-label">% des sites utilisent WordPress</div></div>
+        <div class="stat-card glass"><div class="stat-number" data-count="71">0</div><div class="stat-label">% des sites utilisent un CMS</div></div>
+        <div class="stat-card glass"><div class="stat-number" data-count="5">0</div><div class="stat-label">% utilisent Shopify</div></div>
+        <div class="stat-card glass"><div class="stat-number" data-count="4">0</div><div class="stat-label">% utilisent Wix</div></div>
+      </div>
+    </div>
+
+    <div class="projet-panel glass" style="margin-top:24px;">
+      <h3 style="margin-bottom:14px;">Pourquoi pas un classement "temps réel" généré par IA ?</h3>
+      <p style="color:var(--text-secondary); font-size:0.92rem; line-height:1.7;">
+        Il n'existe aucun registre public, gratuit et exhaustif qui recense "tous les sites du monde par domaine d'activité" en direct.
+        Aucune IA n'a accès à une telle base de données complète et à jour. Plutôt que d'inventer des chiffres invérifiables,
+        cette page s'appuie sur des statistiques publiques réelles, citées et vérifiables auprès de leur source (W3Techs).
+      </p>
+    </div>
+  </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+  new Chart(document.getElementById('cmsChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['WordPress', 'Shopify', 'Wix', 'Squarespace', 'Joomla', 'Drupal', 'Autres CMS'],
+      datasets: [{
+        data: [42.4, 5.1, 4.3, 2.4, 1.2, 1.0, 14.6],
+        backgroundColor: ['#00f0c0', '#7c5cff', '#ff5c7a', '#ffd166', '#4cc9f0', '#5f6780', '#3a4156']
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { color: '#9aa3b8', font: { size: 11 } } } }
+    }
+  });
+
+  new Chart(document.getElementById('noCmsChart'), {
+    type: 'pie',
+    data: {
+      labels: ['Avec CMS détecté', 'Sans CMS détecté (code personnalisé, statique...)'],
+      datasets: [{ data: [71, 29], backgroundColor: ['#00f0c0', '#3a4156'] }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { color: '#9aa3b8', font: { size: 11 } } } }
+    }
+  });
+</script>

@@ -1,0 +1,74 @@
+/* Navigation sobre les pages d’accueil et de démonstration. */
+.navbar {
+  position: fixed;
+  z-index: 1000;
+  top: 14px;
+  left: 50%;
+  display: flex;
+  width: min(calc(100% - 40px), 1180px);
+  min-height: 62px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 8px 12px 8px 16px;
+  transform: translateX(-50%);
+  border: 1px solid var(--border-glass);
+  border-radius: 16px;
+  background: var(--bg-glass-strong);
+  box-shadow: var(--shadow-glass);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+.navbar .nav-logo { display: inline-flex; min-width: max-content; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 700; letter-spacing: -0.02em; }
+.nav-monogram { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 10px; background: var(--accent); color: #071410; font-size: 0.75rem; letter-spacing: -0.06em; }
+.nav-logo-name { font-size: 0.9rem; }
+.nav-links { display: flex; align-items: center; justify-content: center; gap: 2px; }
+.nav-links a { display: inline-flex; min-height: 40px; align-items: center; padding: 8px 12px; border-radius: 999px; color: var(--text-secondary); font-size: 0.84rem; font-weight: 550; transition: background-color var(--transition-fast), color var(--transition-fast); }
+.nav-links a:hover, .nav-links a:focus-visible { background: var(--accent-soft); color: var(--accent); }
+.nav-controls { display: flex; flex: 0 0 auto; align-items: center; gap: 8px; }
+.theme-orb { display: grid; width: 40px; height: 40px; flex: 0 0 auto; place-items: center; border: 1px solid var(--border-glass); border-radius: 50%; background: var(--bg-secondary); transition: background-color var(--transition-fast), transform var(--transition-fast); }
+.theme-orb:hover { transform: rotate(8deg); border-color: var(--accent); }
+.theme-orb svg { width: 18px; height: 18px; fill: none; stroke: var(--text-primary); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.theme-orb .icon-moon { display: none; }
+[data-theme="light"] .theme-orb .icon-sun { display: none; }
+[data-theme="light"] .theme-orb .icon-moon { display: block; }
+.nav-burger { display: none; width: 40px; height: 40px; align-items: center; justify-content: center; border: 1px solid var(--border-glass); border-radius: 50%; background: var(--bg-secondary); }
+.burger-lines { display: flex; width: 17px; flex-direction: column; gap: 5px; }
+.burger-lines span { display: block; width: 100%; height: 2px; border-radius: 2px; background: currentColor; transition: transform var(--transition-fast); }
+.navbar.menu-open .burger-lines span:first-child { transform: translateY(3.5px) rotate(45deg); }
+.navbar.menu-open .burger-lines span:last-child { transform: translateY(-3.5px) rotate(-45deg); }
+
+.theme-iris { position: fixed; z-index: 9999; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; background: var(--accent); clip-path: circle(0% at var(--iris-x, 50%) var(--iris-y, 50%)); transition: clip-path 0.55s ease; }
+.theme-iris.active { clip-path: circle(150% at var(--iris-x, 50%) var(--iris-y, 50%)); }
+.theme-iris-face { width: 120px; height: 120px; border: 4px solid currentColor; border-radius: 50%; object-fit: cover; opacity: 0; transform: scale(0.8); transition: opacity 0.3s ease, transform 0.3s ease; }
+.theme-iris.active .theme-iris-face { opacity: 1; transform: scale(1); }
+
+@media (max-width: 880px) {
+  .navbar { top: 10px; width: calc(100% - 24px); min-height: 58px; gap: 10px; padding: 7px 8px 7px 12px; }
+  .nav-logo-name { font-size: 0.84rem; }
+  .nav-burger { display: flex; }
+  .navbar .nav-links { position: absolute; top: calc(100% + 9px); right: 0; left: 0; display: none; flex-direction: column; align-items: stretch; gap: 3px; padding: 10px; border: 1px solid var(--border-glass); border-radius: 15px; background: var(--bg-glass-strong); box-shadow: var(--shadow-glass); }
+  .navbar.menu-open .nav-links { display: flex; }
+  .nav-links a { min-height: 44px; padding: 10px 14px; border-radius: 10px; }
+}
+
+@media (max-width: 420px) {
+  .navbar { width: calc(100% - 18px); }
+  .nav-logo-name { font-size: 0.78rem; }
+  .theme-orb, .nav-burger { width: 38px; height: 38px; }
+}
+
+/* Bouton retour conservé pour chaque outil/projet. */
+.back-float { position: fixed; z-index: 999; bottom: 20px; left: 20px; display: inline-flex; align-items: center; gap: 8px; padding: 11px 16px; border: 1px solid var(--border-glass); border-radius: 999px; background: var(--bg-glass-strong); box-shadow: var(--shadow-glass); font-size: 0.84rem; font-weight: 650; backdrop-filter: blur(12px); transition: transform var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast); }
+.back-float:hover { transform: translateY(-2px); border-color: var(--accent); color: var(--accent); }
+
+/* Accès rapide au CV sur la page d’accueil. */
+.cv-float { position: fixed; z-index: 900; right: 20px; bottom: 20px; display: inline-flex; align-items: center; gap: 9px; min-height: 48px; padding: 12px 18px; border: 1px solid var(--accent); border-radius: 999px; background: var(--accent); color: #071410; box-shadow: var(--shadow-glass); font-size: 0.84rem; font-weight: 700; transition: transform var(--transition-fast); }
+.cv-float:hover { transform: translateY(-2px); }
+.cv-float-icon { display: grid; width: 20px; height: 20px; place-items: center; border-radius: 50%; background: rgba(7, 20, 16, 0.12); font-size: 1.1rem; line-height: 1; }
+
+@media (max-width: 640px) {
+  .back-float { bottom: 12px; left: 12px; padding: 10px 13px; font-size: 0.78rem; }
+  .cv-float { right: 12px; bottom: 12px; width: 48px; height: 48px; min-height: 48px; justify-content: center; padding: 0; }
+  .cv-float > span:last-child { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
+}

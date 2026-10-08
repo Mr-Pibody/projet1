@@ -1,0 +1,62 @@
+<%- include('../partials/back-button') %>
+
+<section class="projet-page">
+  <div class="container">
+    <div class="projet-header">
+      <h1 class="projet-title"><%= sondage.titre %></h1>
+      <p class="projet-desc">Merci de répondre à ce court sondage. Les résultats ne montrent que les réponses réellement envoyées.</p>
+    </div>
+
+    <div class="projet-panel glass" style="max-width:650px;">
+      <form id="reponseForm">
+        <% sondage.questions.forEach((q, i) => { %>
+          <div class="field-row">
+            <label><%= q.texte %></label>
+            <% if (q.type === 'choix') { %>
+              <% q.options.forEach(opt => { %>
+                <label style="display:flex; align-items:center; gap:8px; padding:8px 0; font-weight:400;">
+                  <input type="radio" name="q<%= i %>" value="<%= opt %>" required> <%= opt %>
+                </label>
+              <% }) %>
+            <% } else if (q.type === 'echelle') { %>
+              <div style="display:flex; gap:10px;">
+                <% ['1','2','3','4','5'].forEach(opt => { %>
+                  <label style="display:flex; flex-direction:column; align-items:center; gap:4px; font-weight:400;">
+                    <input type="radio" name="q<%= i %>" value="<%= opt %>" required> <%= opt %>
+                  </label>
+                <% }) %>
+              </div>
+            <% } else { %>
+              <textarea name="q<%= i %>" rows="3" required></textarea>
+            <% } %>
+          </div>
+        <% }) %>
+        <button type="submit" class="btn btn-primary btn-block"><i class="fa-solid fa-check"></i> Envoyer mes réponses</button>
+      </form>
+      <div id="confirmBox" style="display:none; text-align:center; padding:40px;">
+        <i class="fa-solid fa-circle-check" style="font-size:3rem; color:var(--accent);"></i>
+        <p style="margin-top:16px; font-size:1.1rem;">Merci pour votre participation !</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.getElementById('reponseForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const reponses = <%- JSON.stringify(sondage.questions.map((q,i)=>i)) %>.map(i => fd.get('q' + i) || '');
+
+    const res = await fetch(window.location.pathname, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reponses })
+    });
+    const data = await res.json();
+    if (data.success) {
+      e.target.style.display = 'none';
+      document.getElementById('confirmBox').style.display = 'block';
+    } else {
+      alert(data.error || 'Erreur lors de l\'envoi.');
+    }
+  });
+</script>

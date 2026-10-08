@@ -1,0 +1,95 @@
+<%- include('../partials/back-button') %>
+
+<section class="projet-page">
+  <div class="container">
+    <div class="projet-header">
+      <div class="projet-eyebrow">Projet — Ludique</div>
+      <h1 class="projet-title">Arcade</h1>
+      <p class="projet-desc">10 jeux courts : réflexes, mémoire, logique, quiz, mots mêlés et mots croisés. Le classement partagé reste distinct de ta progression personnelle sur cet appareil.</p>
+    </div>
+
+    <section class="arcade-progress-panel glass" aria-labelledby="arcadeProgressTitle">
+      <div class="arcade-progress-copy">
+        <p class="section-kicker">Sur cet appareil</p>
+        <h2 id="arcadeProgressTitle">Ma progression</h2>
+        <p>Les scores envoyés aux classements conservent aussi un meilleur résultat sur cet appareil. Ce récapitulatif local ne modifie pas le classement partagé.</p>
+      </div>
+      <div class="arcade-progress-stats" aria-label="Résumé de la progression personnelle">
+        <div><strong data-progress-plays>—</strong><span>scores enregistrés</span></div>
+        <div><strong data-progress-games>—</strong><span>jeux joués</span></div>
+      </div>
+      <div class="arcade-progress-recent">
+        <p class="arcade-progress-label">Meilleurs scores personnels</p>
+        <p id="arcadeProgressMessage" role="status" aria-live="polite">Lecture de la progression locale…</p>
+        <ol id="arcadeProgressList"></ol>
+      </div>
+      <button class="btn btn-ghost arcade-progress-clear" id="clearArcadeProgress" type="button" disabled>Effacer ma progression locale</button>
+    </section>
+
+    <div class="projects-grid">
+      <a href="/projets/jeux/neon-runner" class="project-card glass">
+        <div class="pc-top"><div class="pc-icon"><i class="fa-solid fa-person-running"></i></div><div class="pc-tag">Runner</div></div>
+        <h3>Neon Runner</h3>
+        <p>Évitez les obstacles, ramassez des bonus, la vitesse augmente sans cesse.</p>
+        <span class="pc-arrow">Jouer <i class="fa-solid fa-arrow-right"></i></span>
+      </a>
+      <a href="/projets/jeux/reaction" class="project-card glass">
+        <div class="pc-top"><div class="pc-icon"><i class="fa-solid fa-bolt"></i></div><div class="pc-tag">Réflexes</div></div>
+        <h3>Reaction Rapide</h3>
+        <p>Cliquez les cibles néon le plus vite possible. Précision au millième de seconde.</p>
+        <span class="pc-arrow">Jouer <i class="fa-solid fa-arrow-right"></i></span>
+      </a>
+      <a href="/projets/jeux/memory" class="project-card glass">
+        <div class="pc-top"><div class="pc-icon"><i class="fa-solid fa-brain"></i></div><div class="pc-tag">Mémoire</div></div>
+        <h3>Memory Grid</h3>
+        <p>Retrouvez les paires de motifs géométriques avant la fin du temps.</p>
+        <span class="pc-arrow">Jouer <i class="fa-solid fa-arrow-right"></i></span>
+      </a>
+      <a href="/projets/jeux/memory-xl" class="project-card glass">
+        <div class="pc-top"><div class="pc-icon"><i class="fa-solid fa-th-large"></i></div><div class="pc-tag">Mémoire XL</div></div>
+        <h3>Memory XL</h3>
+        <p>La version grand format : 12 paires d'icônes à retrouver, bien plus corsée.</p>
+        <span class="pc-arrow">Jouer <i class="fa-solid fa-arrow-right"></i></span>
+      </a>
+      <a href="/projets/jeux/pattern" class="project-card glass">
+        <div class="pc-top"><div class="pc-icon"><i class="fa-solid fa-shapes"></i></div><div class="pc-tag">Logique</div></div>
+        <h3>Pattern Breaker</h3>
+        <p>Trouvez la séquence manquante. La difficulté augmente à chaque niveau.</p>
+        <span class="pc-arrow">Jouer <i class="fa-solid fa-arrow-right"></i></span>
+      </a>
+      <a href="/projets/jeux/quickmath" class="project-card glass">
+        <div class="pc-top"><div class="pc-icon"><i class="fa-solid fa-calculator"></i></div><div class="pc-tag">Calcul</div></div>
+        <h3>Quick Math</h3>
+        <p>Résolvez des opérations avant le temps imparti. Enchaînez les combos.</p>
+        <span class="pc-arrow">Jouer <i class="fa-solid fa-arrow-right"></i></span>
+      </a>
+      <a href="/projets/jeux/snake" class="project-card glass">
+        <div class="pc-top"><div class="pc-icon"><i class="fa-solid fa-worm"></i></div><div class="pc-tag">Classique</div></div>
+        <h3>Snake</h3>
+        <p>Le grand classique. Clavier ou tactile, mangez et grandissez sans vous mordre.</p>
+        <span class="pc-arrow">Jouer <i class="fa-solid fa-arrow-right"></i></span>
+      </a>
+      <a href="/projets/jeux/quiz-ia" class="project-card glass">
+        <div class="pc-top"><div class="pc-icon"><i class="fa-solid fa-robot"></i></div><div class="pc-tag">IA</div></div>
+        <h3>Quiz IA</h3>
+        <p>Une question est générée à la demande par les fournisseurs d’IA configurés côté serveur.</p>
+        <span class="pc-arrow">Jouer <i class="fa-solid fa-arrow-right"></i></span>
+      </a>
+      <a href="/projets/jeux/mots-mele" class="project-card glass">
+        <div class="pc-top"><div class="pc-icon"><i class="fa-solid fa-magnifying-glass"></i></div><div class="pc-tag">Vocabulaire</div></div>
+        <h3>Mots mêlés</h3>
+        <p>Retrouve des mots de l’IA, du Web ou des données dans une grille générée à chaque partie.</p>
+        <span class="pc-arrow">Jouer <i class="fa-solid fa-arrow-right"></i></span>
+      </a>
+      <a href="/projets/jeux/mots-croises" class="project-card glass">
+        <div class="pc-top"><div class="pc-icon"><i class="fa-solid fa-table-cells"></i></div><div class="pc-tag">Logique</div></div>
+        <h3>Mots croisés</h3>
+        <p>Résous des définitions autour du code, des API et des bases de données.</p>
+        <span class="pc-arrow">Jouer <i class="fa-solid fa-arrow-right"></i></span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<script src="/js/leaderboard.js"></script>
+<script src="/js/arcade-progress.js"></script>

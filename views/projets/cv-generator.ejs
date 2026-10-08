@@ -1,0 +1,54 @@
+<%- include('../partials/back-button') %>
+
+<section class="projet-page">
+  <div class="container">
+    <div class="projet-header">
+      <div class="projet-eyebrow">Projet 06 — Outil pratique</div>
+      <h1 class="projet-title">Générateur de CV</h1>
+      <p class="projet-desc">Remplissez le formulaire, obtenez un CV propre en PDF, prêt à envoyer. Aucune donnée n'est conservée après génération.</p>
+    </div>
+
+    <div class="projet-panel glass" style="max-width:700px;">
+      <form id="cvForm">
+        <div class="field-row-inline">
+          <div class="field-row"><label>Nom complet</label><input type="text" name="nom" required placeholder="Elfried ZANNOU"></div>
+          <div class="field-row"><label>Titre / poste visé</label><input type="text" name="titre" placeholder="Développeur Web Full-Stack"></div>
+        </div>
+        <div class="field-row-inline">
+          <div class="field-row"><label>Email</label><input type="email" name="email" required placeholder="vous@email.com"></div>
+          <div class="field-row"><label>Téléphone</label><input type="text" name="telephone" placeholder="+229 ..."></div>
+        </div>
+        <div class="field-row"><label>Profil / résumé</label><textarea name="resume" rows="3" placeholder="Quelques phrases sur votre profil..."></textarea></div>
+        <div class="field-row"><label>Expériences</label><textarea name="experiences" rows="4" placeholder="Une expérience par ligne ou paragraphe..."></textarea></div>
+        <div class="field-row"><label>Formations</label><textarea name="formations" rows="3" placeholder="Vos diplômes et formations..."></textarea></div>
+        <div class="field-row"><label>Compétences</label><textarea name="competences" rows="3" placeholder="Node.js, JavaScript, SQL, UI/UX..."></textarea></div>
+
+        <button type="submit" class="btn btn-primary btn-block"><i class="fa-solid fa-file-pdf"></i> Générer le PDF</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.getElementById('cvForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const payload = Object.fromEntries(formData.entries());
+
+    const res = await fetch('/api/pdf/cv', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (res.ok) {
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `CV_${payload.nom || 'candidat'}.pdf`;
+      document.body.appendChild(a); a.click(); a.remove();
+    } else {
+      alert('Erreur lors de la génération du PDF.');
+    }
+  });
+</script>

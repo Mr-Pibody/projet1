@@ -1,0 +1,271 @@
+<%- include('../partials/back-button') %>
+
+<section class="projet-page">
+  <div class="container">
+    <header class="projet-header">
+      <p class="projet-eyebrow">Projet — Événementiel</p>
+      <h1 class="projet-title">Plateforme de vote</h1>
+      <p class="projet-desc">Crée un événement avec plusieurs catégories, partage son code et recueille les votes. Une adresse IP peut voter une fois par catégorie.</p>
+      <div class="badge-info" style="margin-top:14px;"><i class="fa-solid fa-circle-info"></i> La protection par IP limite les votes répétés, mais n’est pas une garantie absolue (par exemple, les réseaux partagés).</div>
+    </header>
+
+    <div class="projects-filter" role="group" aria-label="Actions de la plateforme de vote">
+      <button class="filter-chip active" id="createTab" type="button" aria-pressed="true" aria-controls="tab-create">Créer un événement</button>
+      <button class="filter-chip" id="joinTab" type="button" aria-pressed="false" aria-controls="tab-join">Rejoindre un événement</button>
+    </div>
+
+    <section id="tab-create" class="projet-panel glass" aria-labelledby="createTab">
+      <div class="field-row">
+        <label for="evTitre">Titre de l’événement</label>
+        <input type="text" id="evTitre" maxlength="120" placeholder="Nom de votre événement">
+      </div>
+      <h2 class="form-section-title">Catégories</h2>
+      <div id="categoriesContainer"></div>
+      <button class="btn btn-ghost" type="button" id="addCatBtn"><i class="fa-solid fa-plus"></i> Ajouter une catégorie</button>
+      <button class="btn btn-primary btn-block" type="button" id="createEvBtn"><i class="fa-solid fa-rocket"></i> Créer l’événement</button>
+      <p id="createStatus" class="form-status" role="status" aria-live="polite"></p>
+      <div id="createResult" class="create-event-result" aria-live="polite"></div>
+    </section>
+
+    <section id="tab-join" class="projet-panel glass" aria-labelledby="joinTab" hidden>
+      <div class="field-row">
+        <label for="codeInput">Code de l’événement</label>
+        <input type="text" id="codeInput" maxlength="32" placeholder="Code fourni par l’organisateur" autocomplete="off" style="text-transform:uppercase;">
+      </div>
+      <button class="btn btn-primary btn-block" type="button" id="loadEvBtn"><i class="fa-solid fa-magnifying-glass"></i> Charger l’événement</button>
+      <div id="voteContent" class="vote-content" aria-live="polite"></div>
+    </section>
+  </div>
+</section>
+
+<script>
+  const createPanel = document.getElementById('tab-create');
+  const joinPanel = document.getElementById('tab-join');
+  const createTab = document.getElementById('createTab');
+  const joinTab = document.getElementById('joinTab');
+  const voteContent = document.getElementById('voteContent');
+  const createStatus = document.getElementById('createStatus');
+  const createResult = document.getElementById('createResult');
+  const categoriesContainer = document.getElementById('categoriesContainer');
+
+  function showTab(tab) {
+    const showCreate = tab === 'create';
+    createPanel.hidden = !showCreate;
+    joinPanel.hidden = showCreate;
+    createTab.classList.toggle('active', showCreate);
+    joinTab.classList.toggle('active', !showCreate);
+    createTab.setAttribute('aria-pressed', String(showCreate));
+    joinTab.setAttribute('aria-pressed', String(!showCreate));
+  }
+  createTab.addEventListener('click', () => showTab('create'));
+  joinTab.addEventListener('click', () => showTab('join'));
+
+  function makeText(tag, text, className) {
+    const element = document.createElement(tag);
+    if (className) element.className = className;
+    element.textContent = text;
+    return element;
+  }
+
+  function addOption(container, value = '') {
+    const row = document.createElement('div');
+    row.className = 'field-row-inline vote-option-row';
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'cat-option';
+    input.value = value;
+    input.maxLength = 80;
+    input.placeholder = 'Nom de l’option';
+    input.setAttribute('aria-label', 'Nom de l’option de vote');
+    row.appendChild(input);
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.className = 'btn btn-ghost option-remove';
+    remove.textContent = 'Retirer';
+    remove.setAttribute('aria-label', 'Retirer cette option');
+    remove.addEventListener('click', () => row.remove());
+    row.appendChild(remove);
+    container.appendChild(row);
+  }
+
+  function addCategory(name = '', options = ['', '']) {
+    if (categoriesContainer.children.length >= 8) {
+      createStatus.textContent = 'La limite de huit catégories est atteinte.';
+      return;
+    }
+    const card = document.createElement('section');
+    card.className = 'category-editor glass';
+    const titleLabel = document.createElement('label');
+    titleLabel.textContent = 'Nom de la catégorie';
+    const title = document.createElement('input');
+    title.type = 'text';
+    title.className = 'cat-name';
+    title.value = name;
+    title.maxLength = 80;
+    title.placeholder = 'Nom de la catégorie';
+    card.append(titleLabel, title);
+
+    const optionHeading = makeText('h3', 'Options', 'category-options-title');
+    card.appendChild(optionHeading);
+    const optionList = document.createElement('div');
+    optionList.className = 'cat-options';
+    options.forEach(option => addOption(optionList, option));
+    card.appendChild(optionList);
+
+    const actions = document.createElement('div');
+    actions.className = 'category-editor-actions';
+    const add = document.createElement('button');
+    add.type = 'button';
+    add.className = 'btn btn-ghost';
+    add.innerHTML = '<i class="fa-solid fa-plus" aria-hidden="true"></i> Ajouter une option';
+    add.addEventListener('click', () => {
+      if (optionList.children.length >= 12) {
+        createStatus.textContent = 'La limite de douze options par catégorie est atteinte.';
+        return;
+      }
+      addOption(optionList);
+    });
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.className = 'btn btn-ghost';
+    remove.textContent = 'Supprimer la catégorie';
+    remove.addEventListener('click', () => card.remove());
+    actions.append(add, remove);
+    card.appendChild(actions);
+    categoriesContainer.appendChild(card);
+  }
+
+  document.getElementById('addCatBtn').addEventListener('click', () => addCategory());
+  addCategory();
+
+  document.getElementById('createEvBtn').addEventListener('click', async () => {
+    createStatus.textContent = '';
+    createResult.replaceChildren();
+    const titre = document.getElementById('evTitre').value.trim();
+    const categories = Array.from(document.querySelectorAll('.category-editor')).map(block => ({
+      nom: block.querySelector('.cat-name').value.trim(),
+      options: Array.from(block.querySelectorAll('.cat-option')).map(input => input.value.trim()).filter(Boolean)
+    })).filter(category => category.nom && category.options.length >= 2);
+
+    if (!titre || !categories.length) {
+      createStatus.textContent = 'Un titre et au moins une catégorie avec deux options sont requis.';
+      return;
+    }
+
+    const createButton = document.getElementById('createEvBtn');
+    createButton.disabled = true;
+    try {
+      const response = await fetch('/projets/vote/creer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ titre, categories })
+      });
+      const data = await response.json();
+      if (!response.ok || !data.success) throw new Error(data.error || 'Erreur lors de la création.');
+
+      const result = document.createElement('div');
+      result.className = 'result-box';
+      result.appendChild(makeText('span', 'Événement créé', 'result-label'));
+      result.appendChild(makeText('strong', data.code, 'result-value'));
+      result.appendChild(makeText('p', 'Partage ce code avec les participants pour qu’ils puissent voter.', 'result-help'));
+      const open = document.createElement('button');
+      open.type = 'button';
+      open.className = 'btn btn-primary';
+      open.textContent = 'Ouvrir l’événement';
+      open.addEventListener('click', () => {
+        document.getElementById('codeInput').value = data.code;
+        showTab('join');
+        loadEvent();
+      });
+      result.appendChild(open);
+      createResult.appendChild(result);
+    } catch (error) {
+      createStatus.textContent = error.message || 'Impossible de créer cet événement.';
+    } finally {
+      createButton.disabled = false;
+    }
+  });
+
+  document.getElementById('loadEvBtn').addEventListener('click', () => loadEvent());
+  document.getElementById('codeInput').addEventListener('keydown', event => {
+    if (event.key === 'Enter') loadEvent();
+  });
+
+  async function loadEvent() {
+    const code = document.getElementById('codeInput').value.trim();
+    voteContent.replaceChildren();
+    if (!code) {
+      voteContent.appendChild(makeText('p', 'Entre le code pour charger un événement.', 'form-status'));
+      return;
+    }
+    voteContent.appendChild(makeText('p', 'Chargement…', 'form-status'));
+    try {
+      const response = await fetch(`/projets/vote/evenement/${encodeURIComponent(code)}`);
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Événement introuvable.');
+      renderEvent(data);
+    } catch (error) {
+      voteContent.replaceChildren(makeText('p', error.message || 'Impossible de charger cet événement.', 'form-status'));
+    }
+  }
+
+  function renderEvent(eventData) {
+    voteContent.replaceChildren();
+    const heading = document.createElement('div');
+    heading.className = 'vote-event-heading';
+    heading.appendChild(makeText('h2', eventData.titre, 'vote-event-title'));
+    const refresh = document.createElement('button');
+    refresh.type = 'button';
+    refresh.className = 'btn btn-ghost';
+    refresh.textContent = 'Actualiser les votes';
+    refresh.addEventListener('click', loadEvent);
+    heading.appendChild(refresh);
+    voteContent.appendChild(heading);
+
+    (eventData.categories || []).forEach(category => {
+      const card = document.createElement('section');
+      card.className = 'vote-category glass';
+      card.appendChild(makeText('h3', category.nom, 'vote-category-title'));
+      (category.options || []).forEach(option => {
+        const row = document.createElement('div');
+        row.className = 'vote-option-result';
+        const voteText = document.createElement('span');
+        voteText.appendChild(document.createTextNode(`${option} — `));
+        voteText.appendChild(makeText('strong', String(category.votes?.[option] || 0)));
+        voteText.appendChild(document.createTextNode(' vote(s)'));
+        row.appendChild(voteText);
+        if (!category.dejaVote) {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'btn btn-ghost vote-btn';
+          button.textContent = 'Voter';
+          button.addEventListener('click', () => submitVote(eventData.code, category.nom, option, button));
+          row.appendChild(button);
+        }
+        card.appendChild(row);
+      });
+      if (category.dejaVote) {
+        card.appendChild(makeText('p', 'Tu as déjà voté dans cette catégorie depuis cette adresse IP.', 'badge-info'));
+      }
+      voteContent.appendChild(card);
+    });
+  }
+
+  async function submitVote(code, category, option, button) {
+    button.disabled = true;
+    try {
+      const response = await fetch(`/projets/vote/evenement/${encodeURIComponent(code)}/voter`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ categorie: category, option })
+      });
+      const data = await response.json();
+      if (!response.ok || !data.success) throw new Error(data.error || 'Le vote n’a pas été enregistré.');
+      await loadEvent();
+    } catch (error) {
+      voteContent.prepend(makeText('p', error.message || 'Impossible d’enregistrer le vote.', 'form-status'));
+      button.disabled = false;
+    }
+  }
+
+</script>

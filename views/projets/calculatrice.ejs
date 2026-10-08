@@ -1,0 +1,190 @@
+<%- include('../partials/back-button') %>
+
+<section class="projet-page">
+  <div class="container">
+    <div class="projet-header">
+      <div class="projet-eyebrow">Projet — Mathématiques</div>
+      <h1 class="projet-title">Calculatrice scientifique</h1>
+      <p class="projet-desc">Calculatrice classique et véritable traceur de courbes avec étude de fonction (dérivée, zéros approximatifs).</p>
+    </div>
+
+    <div class="projects-filter">
+      <button class="filter-chip active" data-tab="calc">Calculatrice</button>
+      <button class="filter-chip" data-tab="fonction">Étude de fonction</button>
+    </div>
+
+    <!-- ============ ONGLET CALCULATRICE CLASSIQUE ============ -->
+    <div id="tab-calc" class="projet-panel glass" style="max-width:420px; margin:0 auto;">
+      <input type="text" id="calcDisplay" readonly style="width:100%; padding:20px; font-size:1.8rem; text-align:right; border-radius:12px; border:1px solid var(--border-glass); background:var(--bg-secondary); color:var(--text-primary); font-family:var(--font-mono); margin-bottom:16px;" value="0">
+
+      <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:8px;" id="calcButtons">
+        <button class="btn btn-ghost calc-btn" data-val="sin(">sin</button>
+        <button class="btn btn-ghost calc-btn" data-val="cos(">cos</button>
+        <button class="btn btn-ghost calc-btn" data-val="tan(">tan</button>
+        <button class="btn btn-ghost calc-btn" data-val="sqrt(">√</button>
+        <button class="btn btn-ghost calc-btn" data-action="clear">C</button>
+
+        <button class="btn btn-ghost calc-btn" data-val="log(">log</button>
+        <button class="btn btn-ghost calc-btn" data-val="ln(">ln</button>
+        <button class="btn btn-ghost calc-btn" data-val="pi">π</button>
+        <button class="btn btn-ghost calc-btn" data-val="^">^</button>
+        <button class="btn btn-ghost calc-btn" data-action="back"><i class="fa-solid fa-delete-left"></i></button>
+
+        <button class="btn btn-ghost calc-btn" data-val="7">7</button>
+        <button class="btn btn-ghost calc-btn" data-val="8">8</button>
+        <button class="btn btn-ghost calc-btn" data-val="9">9</button>
+        <button class="btn btn-ghost calc-btn" data-val="/">÷</button>
+        <button class="btn btn-ghost calc-btn" data-val="(">(</button>
+
+        <button class="btn btn-ghost calc-btn" data-val="4">4</button>
+        <button class="btn btn-ghost calc-btn" data-val="5">5</button>
+        <button class="btn btn-ghost calc-btn" data-val="6">6</button>
+        <button class="btn btn-ghost calc-btn" data-val="*">×</button>
+        <button class="btn btn-ghost calc-btn" data-val=")">)</button>
+
+        <button class="btn btn-ghost calc-btn" data-val="1">1</button>
+        <button class="btn btn-ghost calc-btn" data-val="2">2</button>
+        <button class="btn btn-ghost calc-btn" data-val="3">3</button>
+        <button class="btn btn-ghost calc-btn" data-val="-">−</button>
+        <button class="btn btn-ghost calc-btn" data-val=".">.</button>
+
+        <button class="btn btn-primary calc-btn" data-val="0" style="grid-column:span 2;">0</button>
+        <button class="btn btn-ghost calc-btn" data-val="+">+</button>
+        <button class="btn btn-primary calc-btn" data-action="equals" style="grid-column:span 2; background:linear-gradient(135deg,var(--accent),var(--accent-2));">=</button>
+      </div>
+    </div>
+
+    <!-- ============ ONGLET ÉTUDE DE FONCTION ============ -->
+    <div id="tab-fonction" class="projet-grid-2" style="display:none;">
+      <div class="projet-panel glass">
+        <div class="field-row"><label>f(x) =</label><input type="text" id="fxInput" value="x^2 - 3*x + 2" placeholder="Ex: x^2 - 3*x + 2, sin(x), sqrt(x)..."></div>
+        <div class="field-row-inline">
+          <div class="field-row"><label>x min</label><input type="number" id="xMin" value="-10"></div>
+          <div class="field-row"><label>x max</label><input type="number" id="xMax" value="10"></div>
+        </div>
+        <button class="btn btn-primary btn-block" id="traceBtn"><i class="fa-solid fa-chart-line"></i> Tracer la courbe</button>
+
+        <div class="field-row" style="margin-top:20px;">
+          <label>Calculer f'(x) en un point</label>
+          <input type="number" id="derivPoint" value="1" placeholder="Valeur de x">
+        </div>
+        <button class="btn btn-ghost btn-block" id="derivBtn"><i class="fa-solid fa-square-root-variable"></i> Calculer la dérivée en ce point</button>
+
+        <div id="fonctionResults" style="margin-top:20px;"></div>
+      </div>
+
+      <div class="projet-panel glass">
+        <h3 style="margin-bottom:16px;">Courbe représentative</h3>
+        <div class="chart-wrap"><canvas id="fxChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="/js/stats-lib.js"></script>
+<script src="/js/function-lib.js"></script>
+<script>
+  // ---- Tabs ----
+  document.querySelectorAll('[data-tab]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-tab]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-calc').style.display = btn.dataset.tab === 'calc' ? 'block' : 'none';
+      document.getElementById('tab-fonction').style.display = btn.dataset.tab === 'fonction' ? 'grid' : 'none';
+    });
+  });
+
+  // ---- Calculatrice classique (inchangée) ----
+  const display = document.getElementById('calcDisplay');
+  let expr = '';
+
+  document.querySelectorAll('.calc-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.dataset.action === 'clear') { expr = ''; display.value = '0'; return; }
+      if (btn.dataset.action === 'back') { expr = expr.slice(0, -1); display.value = expr || '0'; return; }
+      if (btn.dataset.action === 'equals') {
+        try {
+          const result = StatsLib.evaluateExpression(expr);
+          display.value = result;
+          expr = String(result);
+        } catch (e) {
+          display.value = 'Erreur';
+          expr = '';
+        }
+        return;
+      }
+      expr += btn.dataset.val;
+      display.value = expr;
+    });
+  });
+
+  // ---- Étude de fonction ----
+  let fxChart;
+
+  function trace() {
+    const expr = document.getElementById('fxInput').value;
+    const xMin = parseFloat(document.getElementById('xMin').value);
+    const xMax = parseFloat(document.getElementById('xMax').value);
+
+    let points;
+    try {
+      points = FunctionLib.generatePoints(expr, xMin, xMax, 250);
+    } catch (e) {
+      document.getElementById('fonctionResults').innerHTML = `<p style="color:var(--danger);">Expression invalide.</p>`;
+      return;
+    }
+
+    const zeros = FunctionLib.findApproximateZeros(expr, xMin, xMax);
+
+    document.getElementById('fonctionResults').innerHTML = `
+      <div class="badge-info"><i class="fa-solid fa-circle-info"></i> Zéros approximatifs trouvés : ${zeros.length ? zeros.join(', ') : 'aucun sur cet intervalle'}</div>
+    `;
+
+    if (fxChart) fxChart.destroy();
+    fxChart = new Chart(document.getElementById('fxChart'), {
+      type: 'line',
+      data: {
+        datasets: [{
+          label: 'f(x)',
+          data: points.map(p => ({ x: p.x, y: p.y })),
+          borderColor: '#00f0c0',
+          backgroundColor: 'rgba(0,240,192,0.1)',
+          pointRadius: 0,
+          borderWidth: 2,
+          fill: false,
+          spanGaps: false
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { labels: { color: '#9aa3b8' } } },
+        scales: {
+          x: { type: 'linear', title: { display: true, text: 'x', color: '#9aa3b8' }, grid: { color: 'rgba(255,255,255,0.06)' }, ticks: { color: '#9aa3b8' } },
+          y: { title: { display: true, text: 'f(x)', color: '#9aa3b8' }, grid: { color: 'rgba(255,255,255,0.06)' }, ticks: { color: '#9aa3b8' } }
+        }
+      }
+    });
+  }
+
+  document.getElementById('traceBtn').addEventListener('click', trace);
+
+  document.getElementById('derivBtn').addEventListener('click', () => {
+    const expr = document.getElementById('fxInput').value;
+    const x = parseFloat(document.getElementById('derivPoint').value);
+    const deriv = FunctionLib.derivativeAt(expr, x);
+    const resultsBox = document.getElementById('fonctionResults');
+    if (deriv === null) {
+      resultsBox.innerHTML += `<p style="color:var(--danger); margin-top:10px;">Impossible de calculer la dérivée en ce point.</p>`;
+    } else {
+      resultsBox.innerHTML += `
+        <div class="result-box" style="margin-top:14px;">
+          <div class="result-value">f'(${x}) ≈ ${deriv.toFixed(4)}</div>
+          <div class="result-label">Dérivée approximée (différences finies)</div>
+        </div>
+      `;
+    }
+  });
+
+  trace();
+</script>

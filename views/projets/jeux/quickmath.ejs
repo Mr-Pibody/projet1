@@ -1,0 +1,91 @@
+<%- include('../../partials/back-button') %>
+
+<section class="projet-page">
+  <div class="container">
+    <div class="projet-header">
+      <div class="projet-eyebrow">Arcade — Jeu 5</div>
+      <h1 class="projet-title">Quick Math</h1>
+      <p class="projet-desc">Résolvez le plus d'opérations possible en 60 secondes. Les bonnes réponses enchaînées augmentent votre multiplicateur de combo.</p>
+    </div>
+
+    <div class="projet-grid-2">
+      <div class="projet-panel glass" style="text-align:center;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+          <div class="badge-info"><i class="fa-solid fa-clock"></i> <span id="timeDisplay">60</span>s</div>
+          <div class="badge-info"><i class="fa-solid fa-fire"></i> Combo x<span id="comboDisplay">1</span></div>
+          <div class="badge-info"><i class="fa-solid fa-star"></i> Score : <span id="scoreDisplay">0</span></div>
+        </div>
+        <div id="questionDisplay" style="font-family:var(--font-display); font-size:2.5rem; font-weight:700; margin:30px 0; color:var(--accent);">—</div>
+        <input type="number" id="answerInput" style="width:200px; padding:14px; text-align:center; font-size:1.3rem; border-radius:12px; border:1px solid var(--border-glass); background:var(--bg-secondary); color:var(--text-primary);" placeholder="?">
+        <br>
+        <button class="btn btn-primary" id="submitBtn" style="margin-top:16px;">Valider</button>
+        <div id="startOverlay" style="margin-top:20px;"><button class="btn btn-primary" id="startBtn">Démarrer</button></div>
+      </div>
+      <div class="projet-panel glass">
+        <h3 style="margin-bottom:16px;">🏆 Meilleurs scores</h3>
+        <table class="table-clean"><thead><tr><th>#</th><th>Joueur</th><th>Score</th></tr></thead><tbody id="leaderboardBody"></tbody></table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="/js/leaderboard.js"></script>
+<script>
+  let timeLeft = 60, score = 0, combo = 1, currentAnswer, timerInterval, playing = false;
+
+  function generateQuestion() {
+    const ops = ['+', '-', '*'];
+    const op = ops[Math.floor(Math.random() * ops.length)];
+    let a = Math.floor(Math.random() * 20) + 1;
+    let b = Math.floor(Math.random() * 12) + 1;
+    if (op === '-' && b > a) [a, b] = [b, a];
+    currentAnswer = op === '+' ? a + b : op === '-' ? a - b : a * b;
+    document.getElementById('questionDisplay').textContent = `${a} ${op} ${b}`;
+  }
+
+  function submit() {
+    if (!playing) return;
+    const val = parseInt(document.getElementById('answerInput').value);
+    if (val === currentAnswer) {
+      score += 10 * combo;
+      combo = Math.min(combo + 1, 8);
+    } else {
+      combo = 1;
+    }
+    document.getElementById('scoreDisplay').textContent = score;
+    document.getElementById('comboDisplay').textContent = combo;
+    document.getElementById('answerInput').value = '';
+    generateQuestion();
+  }
+
+  document.getElementById('submitBtn').addEventListener('click', submit);
+  document.getElementById('answerInput').addEventListener('keypress', e => { if (e.key === 'Enter') submit(); });
+
+  document.getElementById('startBtn').addEventListener('click', () => {
+    ensurePseudoThenStart(() => {
+      document.getElementById('startOverlay').style.display = 'none';
+      playing = true; score = 0; combo = 1; timeLeft = 60;
+      document.getElementById('scoreDisplay').textContent = '0';
+      document.getElementById('comboDisplay').textContent = '1';
+      generateQuestion();
+      document.getElementById('answerInput').focus();
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        document.getElementById('timeDisplay').textContent = timeLeft;
+        if (timeLeft <= 0) endGame();
+      }, 1000);
+    });
+  });
+
+  function endGame() {
+    clearInterval(timerInterval);
+    playing = false;
+    askPseudoAndSubmit('quick-math', score);
+    setTimeout(() => loadLeaderboard('quick-math', 'leaderboardBody'), 500);
+    document.getElementById('questionDisplay').textContent = `Score final : ${score}`;
+    document.getElementById('startOverlay').style.display = 'block';
+    document.getElementById('startBtn').textContent = 'Rejouer';
+  }
+
+  loadLeaderboard('quick-math', 'leaderboardBody');
+</script>

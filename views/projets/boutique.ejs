@@ -1,0 +1,246 @@
+<%- include('../partials/back-button') %>
+
+<%
+  const THEMES = {
+    boutique: { icon: 'fa-store', desc: 'Catalogue des produits publiés, avec prise de contact directe via WhatsApp.', eyebrow: 'Catalogue · Produits' },
+    ecommerce: { icon: 'fa-cart-shopping', desc: 'Parcours de boutique en ligne et contact direct avec le vendeur.', eyebrow: 'Catalogue · Boutique en ligne' },
+    restaurant: { icon: 'fa-utensils', desc: 'Carte des plats publiés et prise de contact directe avec le restaurant.', eyebrow: 'Catalogue · Restauration' }
+  };
+  const theme = THEMES[typeCatalogue] || THEMES.boutique;
+  const priceUnit = 'FCFA';
+  const safeProducts = Array.isArray(produits) ? produits : [];
+  const categories = [...new Set(safeProducts.map(product => String(product.categorie || 'Autres').trim() || 'Autres'))]
+    .sort((a, b) => a.localeCompare(b, 'fr'));
+%>
+
+<section class="projet-page catalogue-page">
+  <div class="container">
+    <header class="projet-header catalogue-header">
+      <p class="projet-eyebrow"><%= theme.eyebrow %></p>
+      <h1 class="projet-title"><i class="fa-solid <%= theme.icon %>" aria-hidden="true"></i> <%= title %></h1>
+      <p class="projet-desc"><%= theme.desc %></p>
+      <div class="catalogue-header-meta"><span><span class="status-dot" aria-hidden="true"></span> Prix affichés en FCFA</span><span>Commande directe, sans paiement sur le site</span></div>
+    </header>
+
+    <% if (catalogueError) { %>
+      <div class="catalogue-status catalogue-status--error" role="alert">
+        <strong>Catalogue temporairement indisponible.</strong>
+        <span>Les éléments enregistrés n’ont pas pu être chargés. Réessayez dans quelques instants.</span>
+        <a class="btn btn-ghost" href="">Réessayer</a>
+      </div>
+    <% } %>
+
+    <% if (isAdmin) { %>
+      <section class="projet-panel glass catalogue-admin-panel" aria-labelledby="catalogue-admin-title">
+        <div class="catalogue-admin-heading">
+          <div><p class="section-kicker">Gestion du catalogue</p><h2 id="catalogue-admin-title">Publier un <%= itemLabel %></h2></div>
+          <button class="btn btn-ghost" type="button" id="logoutBtn">Se déconnecter</button>
+        </div>
+        <form id="produitForm" class="catalogue-admin-form" enctype="multipart/form-data">
+          <div class="field-row-inline">
+            <div class="field-row"><label for="productName">Nom</label><input id="productName" type="text" name="nom" maxlength="120" required autocomplete="off"></div>
+            <div class="field-row"><label for="productCategory">Catégorie</label><input id="productCategory" type="text" name="categorie" maxlength="60" value="Autres" required></div>
+          </div>
+          <div class="field-row-inline">
+            <div class="field-row"><label for="productPrice">Prix (FCFA)</label><input id="productPrice" type="number" name="prix" min="0" step="1" inputmode="numeric" required></div>
+            <% if (typeCatalogue !== 'restaurant') { %>
+              <div class="field-row"><label for="productStock">Stock disponible</label><input id="productStock" type="number" name="stock" min="0" step="1" inputmode="numeric" required></div>
+            <% } else { %><input type="hidden" name="stock" value="0"><% } %>
+          </div>
+          <div class="field-row-inline">
+            <div class="field-row"><label for="productWhatsapp">WhatsApp de commande <span>(facultatif)</span></label><input id="productWhatsapp" type="tel" name="whatsapp_numero" inputmode="tel" placeholder="229 01 99 00 00 00"></div>
+            <div class="field-row"><label for="productImage">Photo <span>(facultatif)</span></label><input id="productImage" type="file" name="image" accept="image/*"></div>
+          </div>
+          <div class="field-row"><label for="productDescription">Description</label><textarea id="productDescription" name="description" rows="3" maxlength="1200"></textarea></div>
+          <div class="catalogue-admin-actions"><button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus" aria-hidden="true"></i> Publier</button><p id="catalogueFormStatus" role="status" aria-live="polite"></p></div>
+        </form>
+      </section>
+    <% } %>
+
+    <div class="catalogue-toolbar" aria-label="Rechercher et trier le catalogue">
+      <div class="catalogue-search-wrap">
+        <label for="catalogueSearch">Rechercher</label>
+        <input id="catalogueSearch" type="search" placeholder="Nom, catégorie, description…" autocomplete="off" <%= safeProducts.length ? '' : 'disabled' %>>
+      </div>
+      <div class="catalogue-filter-wrap">
+        <label for="catalogueCategory">Catégorie</label>
+        <select id="catalogueCategory" <%= safeProducts.length ? '' : 'disabled' %>>
+          <option value="">Toutes</option>
+          <% categories.forEach(category => { %><option value="<%= category %>"><%= category %></option><% }) %>
+        </select>
+      </div>
+      <div class="catalogue-filter-wrap">
+        <label for="catalogueSort">Trier par</label>
+        <select id="catalogueSort" <%= safeProducts.length ? '' : 'disabled' %>>
+          <option value="recent">Plus récents</option><option value="name">Nom A–Z</option><option value="price-asc">Prix croissant</option><option value="price-desc">Prix décroissant</option>
+        </select>
+      </div>
+      <p class="catalogue-count" id="catalogueCount" aria-live="polite"><%= safeProducts.length %> <%= safeProducts.length > 1 ? itemLabel + 's' : itemLabel %></p>
+    </div>
+
+    <div class="projects-grid catalogue-grid" id="catalogueGrid">
+      <% safeProducts.forEach(product => {
+        const category = String(product.categorie || 'Autres').trim() || 'Autres';
+        const stock = Math.max(0, Number(product.stock) || 0);
+        const available = typeCatalogue === 'restaurant' || stock > 0;
+        const phone = String(product.whatsapp_numero || '').replace(/\D/g, '');
+        const hasOrderContact = phone.length >= 8 && phone.length <= 15;
+        const orderMessage = encodeURIComponent('Bonjour, je souhaite me renseigner sur : ' + product.nom);
+      %>
+        <article class="project-card glass catalogue-card" data-product-card data-category="<%= category %>" data-name="<%= product.nom %>" data-description="<%= product.description || '' %>" data-price="<%= Number(product.prix) || 0 %>" data-created="<%= product.cree_le || '' %>">
+          <div class="catalogue-card-media">
+            <% if (product.image) { %>
+              <img src="/uploads/boutique/<%= encodeURIComponent(product.image) %>" alt="Photo de <%= product.nom %>" width="900" height="640" loading="lazy" decoding="async">
+            <% } else { %>
+              <div class="catalogue-image-fallback" aria-hidden="true"><span><i class="fa-solid <%= theme.icon %>"></i></span></div>
+            <% } %>
+            <span class="catalogue-category"><%= category %></span>
+          </div>
+          <div class="catalogue-card-content">
+            <div class="catalogue-card-heading"><h2><%= product.nom %></h2><span class="catalogue-price"><%= new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(Number(product.prix) || 0) %> <%= priceUnit %></span></div>
+            <p class="catalogue-card-description"><%= product.description || 'Aucune description n’a été renseignée.' %></p>
+            <div class="catalogue-card-footer">
+              <% if (typeCatalogue !== 'restaurant') { %><span class="catalogue-stock <%= available ? '' : 'is-unavailable' %>"><span aria-hidden="true"></span><%= available ? `${stock} disponible${stock > 1 ? 's' : ''}` : 'Indisponible' %></span><% } else { %><span class="catalogue-stock catalogue-stock--neutral">Carte publiée</span><% } %>
+              <div class="catalogue-card-actions">
+                <button class="catalogue-details-btn" type="button" data-product-details>Voir les détails <span aria-hidden="true">↗</span></button>
+                <% if (isAdmin) { %><button class="btn btn-ghost btn-sm delete-btn" type="button" data-id="<%= product.id %>">Retirer</button><% } %>
+              </div>
+            </div>
+            <div class="catalogue-order-data" hidden>
+              <% if (available && hasOrderContact) { %><a class="btn btn-primary btn-block" data-order-link href="https://wa.me/<%= phone %>?text=<%= orderMessage %>" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i> Contacter sur WhatsApp</a>
+              <% } else if (!available) { %><p class="catalogue-order-note">Cet article est indiqué comme indisponible.</p>
+              <% } else { %><p class="catalogue-order-note">Aucun contact de commande n’est renseigné pour le moment.</p><% } %>
+            </div>
+          </div>
+        </article>
+      <% }) %>
+      <% if (!safeProducts.length && !catalogueError) { %>
+        <div class="catalogue-empty glass"><span class="catalogue-empty-icon" aria-hidden="true"><i class="fa-solid <%= theme.icon %>"></i></span><div><h2>Aucun <%= itemLabel %> publié pour le moment.</h2><p>Les éléments apparaîtront ici après leur publication par le responsable du catalogue.</p></div></div>
+      <% } %>
+    </div>
+    <div class="catalogue-empty-filter" id="catalogueNoResults" hidden role="status"><strong>Aucun résultat</strong><span>Essayez un autre terme ou une autre catégorie.</span></div>
+  </div>
+</section>
+
+<dialog class="catalogue-dialog" id="productDialog" aria-labelledby="productDialogTitle">
+  <div class="catalogue-dialog-inner">
+    <button class="catalogue-dialog-close" type="button" aria-label="Fermer les détails">×</button>
+    <p class="section-kicker" id="productDialogCategory"></p>
+    <h2 id="productDialogTitle"></h2>
+    <p class="catalogue-dialog-price" id="productDialogPrice"></p>
+    <p id="productDialogDescription"></p>
+    <p class="catalogue-dialog-stock" id="productDialogStock"></p>
+    <div id="productDialogOrder"></div>
+  </div>
+</dialog>
+
+<script>
+  const TYPE = '<%= typeCatalogue %>';
+  const catalogueForm = document.getElementById('produitForm');
+  const formStatus = document.getElementById('catalogueFormStatus');
+
+  const logoutButton = document.getElementById('logoutBtn');
+  if (logoutButton) logoutButton.addEventListener('click', async () => {
+    try {
+      const response = await fetch(`/projets/boutique/${TYPE}/admin/logout`, { method: 'POST' });
+      if (response.ok) location.reload();
+    } catch (error) { if (formStatus) formStatus.textContent = 'La déconnexion a échoué. Réessayez.'; }
+  });
+
+  if (catalogueForm) catalogueForm.addEventListener('submit', async event => {
+    event.preventDefault();
+    formStatus.textContent = 'Publication en cours…';
+    try {
+      const response = await fetch(`/projets/boutique/${TYPE}/admin/produits`, { method: 'POST', body: new FormData(catalogueForm) });
+      const data = await response.json();
+      if (!response.ok || !data.success) throw new Error(data.error || 'La publication a échoué.');
+      formStatus.textContent = 'Élément publié.';
+      location.reload();
+    } catch (error) { formStatus.textContent = error.message || 'La publication a échoué.'; }
+  });
+
+  document.querySelectorAll('.delete-btn').forEach(button => button.addEventListener('click', async () => {
+    if (!confirm('Supprimer cet élément du catalogue ?')) return;
+    button.disabled = true;
+    try {
+      const response = await fetch(`/projets/boutique/${TYPE}/admin/produits/${encodeURIComponent(button.dataset.id)}/supprimer`, { method: 'POST' });
+      if (!response.ok) throw new Error();
+      location.reload();
+    } catch (error) { button.disabled = false; if (formStatus) formStatus.textContent = 'La suppression a échoué. Réessayez.'; }
+  }));
+
+  const cards = [...document.querySelectorAll('[data-product-card]')];
+  const searchInput = document.getElementById('catalogueSearch');
+  const categorySelect = document.getElementById('catalogueCategory');
+  const sortSelect = document.getElementById('catalogueSort');
+  const countOutput = document.getElementById('catalogueCount');
+  const noResults = document.getElementById('catalogueNoResults');
+
+  function normalize(value) {
+    return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('fr');
+  }
+  function updateCatalogue() {
+    const term = normalize(searchInput && searchInput.value);
+    const selectedCategory = categorySelect ? categorySelect.value : '';
+    const visibleCards = cards.filter(card => {
+      const matchesText = normalize(`${card.dataset.name} ${card.dataset.description} ${card.dataset.category}`).includes(term);
+      const matchesCategory = !selectedCategory || card.dataset.category === selectedCategory;
+      card.hidden = !(matchesText && matchesCategory);
+      return !card.hidden;
+    });
+    const mode = sortSelect ? sortSelect.value : 'recent';
+    visibleCards.sort((a, b) => {
+      if (mode === 'name') return a.dataset.name.localeCompare(b.dataset.name, 'fr');
+      if (mode === 'price-asc') return Number(a.dataset.price) - Number(b.dataset.price);
+      if (mode === 'price-desc') return Number(b.dataset.price) - Number(a.dataset.price);
+      return String(b.dataset.created).localeCompare(String(a.dataset.created));
+    }).forEach(card => document.getElementById('catalogueGrid').appendChild(card));
+    if (countOutput) countOutput.textContent = `${visibleCards.length} ${visibleCards.length > 1 ? '<%= itemLabel %>s' : '<%= itemLabel %>'}`;
+    if (noResults) noResults.hidden = visibleCards.length > 0 || cards.length === 0;
+  }
+  if (searchInput) searchInput.addEventListener('input', updateCatalogue);
+  if (categorySelect) categorySelect.addEventListener('change', updateCatalogue);
+  if (sortSelect) sortSelect.addEventListener('change', updateCatalogue);
+  updateCatalogue();
+
+  const dialog = document.getElementById('productDialog');
+  const dialogTitle = document.getElementById('productDialogTitle');
+  const dialogCategory = document.getElementById('productDialogCategory');
+  const dialogPrice = document.getElementById('productDialogPrice');
+  const dialogDescription = document.getElementById('productDialogDescription');
+  const dialogStock = document.getElementById('productDialogStock');
+  const dialogOrder = document.getElementById('productDialogOrder');
+  const closeDialog = document.querySelector('.catalogue-dialog-close');
+
+  document.querySelectorAll('[data-product-details]').forEach(button => button.addEventListener('click', () => {
+    const card = button.closest('[data-product-card]');
+    if (!card || !dialog) return;
+    const heading = card.querySelector('.catalogue-card-heading h2');
+    const price = card.querySelector('.catalogue-price');
+    const description = card.querySelector('.catalogue-card-description');
+    const stock = card.querySelector('.catalogue-stock');
+    const category = card.querySelector('.catalogue-category');
+    const order = card.querySelector('.catalogue-order-data');
+    dialogTitle.textContent = heading ? heading.textContent : '';
+    dialogCategory.textContent = category ? category.textContent : '';
+    dialogPrice.textContent = price ? price.textContent : '';
+    dialogDescription.textContent = description ? description.textContent : '';
+    dialogStock.textContent = stock ? stock.textContent.trim() : '';
+    dialogOrder.replaceChildren();
+    if (order) {
+      const orderLink = order.querySelector('[data-order-link]');
+      if (orderLink) {
+        const link = orderLink.cloneNode(true);
+        link.classList.add('catalogue-dialog-action');
+        dialogOrder.appendChild(link);
+      } else {
+        const note = order.querySelector('.catalogue-order-note');
+        if (note) { const copy = document.createElement('p'); copy.textContent = note.textContent; dialogOrder.appendChild(copy); }
+      }
+    }
+    if (typeof dialog.showModal === 'function') dialog.showModal();
+    else dialog.setAttribute('open', '');
+  }));
+  if (closeDialog && dialog) closeDialog.addEventListener('click', () => dialog.close ? dialog.close() : dialog.removeAttribute('open'));
+  if (dialog) dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close ? dialog.close() : dialog.removeAttribute('open'); });
+</script>

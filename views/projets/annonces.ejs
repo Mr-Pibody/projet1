@@ -1,0 +1,59 @@
+<%- include('../partials/back-button') %>
+
+<section class="projet-page">
+  <div class="container">
+    <header class="projet-header">
+      <p class="projet-eyebrow">Projet · publications</p>
+      <h1 class="projet-title">Petites annonces</h1>
+      <p class="projet-desc">Publiez une annonce avec un texte, une image et, si besoin, un lien. Les cartes ci-dessous correspondent aux publications enregistrées dans le catalogue.</p>
+    </header>
+
+    <section class="projet-panel glass" style="max-width:600px; margin-bottom:40px;" aria-labelledby="annonce-form-title">
+      <h2 id="annonce-form-title" style="margin-bottom:16px;"><i class="fa-solid fa-plus" aria-hidden="true"></i> Publier une annonce</h2>
+      <form id="annonceForm">
+        <div class="field-row"><label for="annonceTitre">Titre</label><input id="annonceTitre" type="text" name="titre" maxlength="100" required placeholder="Titre de l’annonce"></div>
+        <div class="field-row"><label for="annonceDescription">Description</label><textarea id="annonceDescription" name="description" maxlength="500" rows="3" placeholder="Informations utiles"></textarea></div>
+        <div class="field-row"><label for="annonceLien">Lien <span>(facultatif)</span></label><input id="annonceLien" type="url" name="lien" placeholder="https://…"></div>
+        <div class="field-row"><label for="annonceImage">Image <span>(facultative)</span></label><input id="annonceImage" type="file" name="image" accept="image/*"></div>
+        <button type="submit" class="btn btn-primary btn-block"><i class="fa-solid fa-bullhorn" aria-hidden="true"></i> Publier</button>
+        <p id="annonceStatus" class="form-status" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <h2 class="catalogue-heading">Annonces publiées</h2>
+    <div class="projects-grid annonces-grid" id="annoncesGrid">
+      <% if (!annonces.length) { %>
+        <div class="empty-state"><strong>Aucune annonce publiée pour le moment.</strong><span>Les publications apparaîtront ici après leur enregistrement.</span></div>
+      <% } %>
+      <% annonces.forEach(a => { %>
+        <article class="project-card glass announcement-card">
+          <% if (a.image) { %><img src="/uploads/annonces/<%= encodeURIComponent(a.image) %>" alt="Illustration de l’annonce <%= a.titre %>" loading="lazy" decoding="async"><% } %>
+          <div class="announcement-card-meta"><span class="pc-icon" aria-hidden="true"><i class="fa-solid fa-bullhorn"></i></span></div>
+          <h3><%= a.titre %></h3>
+          <p><%= a.description %></p>
+          <% if (a.lien && /^https?:\/\//i.test(a.lien)) { %><a href="<%= a.lien %>" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-block announcement-link">Voir la publication <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a><% } %>
+        </article>
+      <% }) %>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.getElementById('annonceForm').addEventListener('submit', async event => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const status = document.getElementById('annonceStatus');
+    const button = form.querySelector('button[type="submit"]');
+    button.disabled = true;
+    status.textContent = 'Publication en cours…';
+    try {
+      const response = await fetch('/projets/annonces/publier', { method: 'POST', body: new FormData(form) });
+      const data = await response.json();
+      if (!response.ok || !data.success) throw new Error(data.error || 'La publication a échoué.');
+      status.textContent = 'Annonce publiée.';
+      location.reload();
+    } catch (error) {
+      status.textContent = error.message || 'Erreur lors de la publication.';
+    } finally { button.disabled = false; }
+  });
+</script>

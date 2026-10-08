@@ -1,0 +1,14 @@
+# Dépendances et secrets
+node_modules/
+.env
+.env.*
+!.env.example
+
+# Données générées / persistantes : ne pas remplacer la base live par une copie vide.
+data/portfolio.sqlite
+data/sessions/
+public/uploads/
+
+# Fichiers locaux
+.DS_Store
+npm-debug.log*

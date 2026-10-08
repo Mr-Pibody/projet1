@@ -1,0 +1,86 @@
+<%
+  const isHomePage = typeof isHome !== 'undefined' && isHome;
+  const pageTitle = typeof title !== 'undefined' && title ? `${title} — Elfried ZANNOU` : 'Elfried ZANNOU — Développement logiciel & IA';
+  const pageDescription = typeof description !== 'undefined' && description
+    ? description
+    : (isHomePage
+      ? 'Portfolio d’Elfried ZANNOU, développeur logiciel diplômé en Systèmes Informatiques et Logiciels, en progression vers l’intelligence artificielle.'
+      : `Projet ${typeof title !== 'undefined' ? title : ''} d’Elfried ZANNOU, développeur logiciel.`);
+%>
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="<%= pageDescription %>">
+  <meta name="theme-color" content="#0b1216">
+  <meta name="color-scheme" content="dark light">
+  <meta name="robots" content="index,follow,max-image-preview:large">
+  <title><%= pageTitle %></title>
+  <% if (isHomePage) { %>
+    <link rel="canonical" href="https://pibody.alwaysdata.net/">
+    <meta property="og:url" content="https://pibody.alwaysdata.net/">
+  <% } %>
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="fr_FR">
+  <meta property="og:site_name" content="Elfried ZANNOU — Portfolio">
+  <meta property="og:title" content="<%= pageTitle %>">
+  <meta property="og:description" content="<%= pageDescription %>">
+  <meta property="og:image" content="https://pibody.alwaysdata.net/images/profile.jpeg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="<%= pageTitle %>">
+  <meta name="twitter:description" content="<%= pageDescription %>">
+  <% if (isHomePage) { %>
+    <script type="application/ld+json">
+      {"@context":"https://schema.org","@type":"Person","name":"Elfried ZANNOU","url":"https://pibody.alwaysdata.net/","image":"https://pibody.alwaysdata.net/images/profile.jpeg","jobTitle":"Développeur logiciel","email":"elfriedzannou@gmail.com","address":{"@type":"PostalAddress","addressLocality":"Cotonou","addressCountry":"BJ"},"sameAs":["https://github.com/Mr-Pibody/projet","https://www.linkedin.com/in/elfried-zannou"]}
+    </script>
+  <% } %>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+
+  <!-- Icônes utilisées par les pages-projets existantes. La mise en page reste lisible sans CDN. -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/navbar.css">
+  <link rel="stylesheet" href="/css/hero-about.css">
+  <link rel="stylesheet" href="/css/stack-parcours-stats.css">
+  <link rel="stylesheet" href="/css/services-projects.css">
+  <link rel="stylesheet" href="/css/faq-contact-footer.css">
+  <link rel="stylesheet" href="/css/projet-commun.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+  <link rel="stylesheet" href="/css/immersive.css">
+  <% if (isHomePage) { %>
+    <link rel="stylesheet" href="/css/home.css">
+  <% } %>
+  <% if (typeof extraCss !== 'undefined' && Array.isArray(extraCss)) { extraCss.forEach(function(href) { %>
+    <link rel="stylesheet" href="<%= href %>">
+  <% }) } %>
+
+  <script>
+    // Appliquer le thème mémorisé avant l'affichage, sans bloquer si le stockage est indisponible.
+    (function () {
+      document.documentElement.classList.add('js-motion');
+      try {
+        if (window.localStorage.getItem('theme') === 'light') {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      } catch (error) { /* Le thème sombre reste le choix par défaut. */ }
+    })();
+  </script>
+</head>
+<body class="<%= isHomePage ? 'home-page' : 'project-page' %>">
+  <a href="#main-content" class="skip-link">Aller au contenu</a>
+  <%- include('navbar') %>
+
+  <main id="main-content" tabindex="-1">
+    <%- body %>
+  </main>
+
+  <%- include('footer') %>
+
+  <script src="/js/main.js" defer></script>
+  <% if (typeof extraJs !== 'undefined' && Array.isArray(extraJs)) { extraJs.forEach(function(src) { %>
+    <script src="<%= src %>" defer></script>
+  <% }) } %>
+</body>
+</html>
